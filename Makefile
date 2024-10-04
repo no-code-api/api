@@ -3,3 +3,6 @@ build:
 
 run: build
 	@./bin/no-code-api
+
+run-dev:
+	@go run ./main.go

@@ -26,10 +26,11 @@ func InitializePostgres() {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=UTC", host, port, user, password, dbName, sslMode)
 	var err error
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
 	if err != nil {
 		logger.FatalF("Fail to connect on database: %v", err)
 	}
+
+	RunMigrations(db)
 
 	sqlDB, err := db.DB()
 	if err != nil {
@@ -40,11 +41,12 @@ func InitializePostgres() {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
+	logger.Debug("Database initialized")
 }
 
 func GetDb() *gorm.DB {
 	logger := logger.NewLogger("Postgre")
-	if db != nil {
+	if db == nil {
 		logger.Fatal("Database not initialized")
 	}
 	return db
