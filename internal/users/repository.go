@@ -19,6 +19,13 @@ type userRepository struct {
 	logg *logger.Logger
 }
 
+func NewRepository() IUserRepository {
+	return &userRepository{
+		db:   database.GetDb(),
+		logg: logger.NewLogger("UserRepository"),
+	}
+}
+
 func (r *userRepository) Create(user *User) error {
 	user.Id = 0
 	result := r.db.Create(user)
@@ -68,11 +75,4 @@ func (r *userRepository) Delete(id uint) error {
 		return result.Error
 	}
 	return nil
-}
-
-func NewRepository() IUserRepository {
-	return &userRepository{
-		db:   database.GetDb(),
-		logg: logger.NewLogger("UserRepository"),
-	}
 }
