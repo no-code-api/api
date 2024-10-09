@@ -14,7 +14,13 @@ func HandleFindAll(c *gin.Context) {
 		utils.ResBadRequest(c, "Erro ao consultar usuários.")
 		return
 	}
-	utils.ResOkData(c, users)
+	usersReponse := make([]*UserResponse, len(users))
+	for index, user := range users {
+		userResponse := &UserResponse{}
+		userResponse.FromModel(user)
+		usersReponse[index] = userResponse
+	}
+	utils.ResOkData(c, usersReponse)
 }
 
 func HandleFindById(c *gin.Context) {
@@ -29,18 +35,25 @@ func HandleFindById(c *gin.Context) {
 		utils.ResNotFound(c, "Usuário não encontrado.")
 		return
 	}
-	utils.ResOkData(c, user)
+	userResponse := &UserResponse{}
+	userResponse.FromModel(user)
+	utils.ResOkData(c, userResponse)
 }
 
 func HandleCreate(c *gin.Context) {
-	var user User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		utils.ResBadRequest(c, "Entrada de dados inválida.")
+	var user createUserRequest
+	if err := utils.BindJson(c, &user); err != nil {
 		return
 	}
-	repository := NewRepository()
-	err := repository.Create(&user)
+
+	hash, err := HashPassword(user.Password)
 	if err != nil {
+		utils.ResBadRequest(c, "Erro ao gerar senha.")
+	}
+
+	user.Password = hash
+	repository := NewRepository()
+	if err := repository.Create(user.ToModel()); err != nil {
 		utils.ResBadRequest(c, "Erro ao criar usuário.")
 		return
 	}
@@ -49,12 +62,11 @@ func HandleCreate(c *gin.Context) {
 
 func HandleUpdate(c *gin.Context) {
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
-	var requestUser User
-	if err := c.ShouldBindJSON(&requestUser); err != nil {
-		utils.ResBadRequest(c, "Entrada de dados inválida.")
+	var requestUser updateUserRequest
+	if err := utils.BindJson(c, &requestUser); err != nil {
 		return
 	}
-	if id != int64(requestUser.Id) {
+	if id <= 0 || id != int64(requestUser.Id) {
 		utils.ResInvalidParam(c, "id")
 		return
 	}
@@ -74,16 +86,22 @@ func HandleUpdate(c *gin.Context) {
 		utils.ResBadRequest(c, "Erro ao salvar usuário.")
 		return
 	}
-	utils.ResNoContent(c)
+	utils.ResOk(c, "", nil)
 }
 
 func HandleDelete(c *gin.Context) {
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
+
+	if id <= 0 {
+		utils.ResInvalidParam(c, "id")
+		return
+	}
+
 	repository := NewRepository()
 	err := repository.Delete(uint(id))
 	if err != nil {
 		utils.ResBadRequest(c, "Erro ao remover usuário.")
 		return
 	}
-	utils.ResNoContent(c)
+	utils.ResOk(c, "", nil)
 }

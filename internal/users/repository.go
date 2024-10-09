@@ -8,7 +8,7 @@ import (
 
 type IUserRepository interface {
 	Create(user *User) error
-	FindAll() ([]User, error)
+	FindAll() ([]*User, error)
 	FindById(id uint) (*User, error)
 	Update(user *User) error
 	Delete(id uint) error
@@ -36,8 +36,8 @@ func (r *userRepository) Create(user *User) error {
 	return nil
 }
 
-func (r *userRepository) FindAll() ([]User, error) {
-	var users []User
+func (r *userRepository) FindAll() ([]*User, error) {
+	var users []*User
 	result := r.db.Find(&users)
 	if result.Error != nil {
 		r.logg.ErrorF("Error find users: %v", result.Error.Error())
