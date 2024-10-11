@@ -3,6 +3,7 @@ package users
 import "github.com/gin-gonic/gin"
 
 func RegisterUsersRoutesV1(rg *gin.RouterGroup) {
+	rg.POST("/login", HandleLogin)
 	routes := rg.Group("/users")
 	{
 		routes.POST("/", HandleCreate)

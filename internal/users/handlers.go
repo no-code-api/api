@@ -5,13 +5,51 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/leandro-d-santos/no-code-api/internal/utils"
+	"github.com/leandro-d-santos/no-code-api/pkg/jwt"
 )
+
+func errorToSearchUser(c *gin.Context) {
+	utils.ResBadRequest(c, "Erro ao consultar usuário.")
+}
+
+func HandleLogin(c *gin.Context) {
+	userRequest := &loginRequest{}
+	if err := utils.BindJson(c, userRequest); err != nil {
+		return
+	}
+
+	repository := NewRepository()
+	user, err := repository.FindByEmail(userRequest.Email)
+	if err != nil {
+		errorToSearchUser(c)
+		return
+	}
+
+	if user == nil {
+		utils.ResBadRequest(c, "Email inválido.")
+		return
+	}
+
+	if !VerifyPassword(userRequest.Password, user.Password) {
+		utils.ResBadRequest(c, "Senha inválida.")
+		return
+	}
+
+	token, err := jwt.GenerateJWT(user.Id)
+	if err != nil {
+		utils.ResBadRequest(c, "Erro ao gerar token.")
+		return
+	}
+
+	response := &loginResponse{Token: token}
+	utils.ResOkData(c, response)
+}
 
 func HandleFindAll(c *gin.Context) {
 	repository := NewRepository()
 	users, err := repository.FindAll()
 	if err != nil {
-		utils.ResBadRequest(c, "Erro ao consultar usuários.")
+		errorToSearchUser(c)
 		return
 	}
 	usersReponse := make([]*UserResponse, len(users))
@@ -28,7 +66,7 @@ func HandleFindById(c *gin.Context) {
 	repository := NewRepository()
 	user, err := repository.FindById(uint(id))
 	if err != nil {
-		utils.ResBadRequest(c, "Erro ao consultar usuário.")
+		errorToSearchUser(c)
 		return
 	}
 	if user == nil {
@@ -73,7 +111,7 @@ func HandleUpdate(c *gin.Context) {
 	repository := NewRepository()
 	user, err := repository.FindById(requestUser.Id)
 	if err != nil {
-		utils.ResBadRequest(c, "Erro ao consultar usuário.")
+		errorToSearchUser(c)
 		return
 	}
 	if user == nil {

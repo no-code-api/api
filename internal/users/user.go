@@ -1,8 +1,19 @@
 package users
 
-import (
-	"gorm.io/gorm"
-)
+import "time"
+
+type loginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type loginResponse struct {
+	Token string `json:"token"`
+}
+type filter struct {
+	Id    uint
+	Email string
+}
 
 type createUserRequest struct {
 	Name     string `json:"name"`
@@ -22,11 +33,20 @@ type UserResponse struct {
 }
 
 type User struct {
-	gorm.Model
-	Id       uint   `gorm:"unique;primaryKey;autoIncrement"`
-	Name     string `gorm:"size:150;notnull"`
-	Email    string `gorm:"size:100;unique;notnull"`
-	Password string `gorm:"size:60;notnull"`
+	Id        uint      `gorm:"unique;primaryKey;autoIncrement"`
+	Name      string    `gorm:"size:150;notnull"`
+	Email     string    `gorm:"size:100;unique;notnull"`
+	Password  string    `gorm:"size:60;notnull"`
+	CreatedAt time.Time `gorm:"notnull"`
+	UpdatedAt time.Time `gorm:"notnull"`
+}
+
+func (user *User) setCreatedAt() {
+	user.CreatedAt = time.Now()
+}
+
+func (user *User) setUpdatedAt() {
+	user.UpdatedAt = time.Now()
 }
 
 func (user *createUserRequest) ToModel() *User {
