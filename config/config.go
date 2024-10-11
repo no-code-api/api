@@ -8,6 +8,7 @@ type Config struct {
 	PostgrePassword string
 	PostgreDbName   string
 	PostgreSSLMode  string
+	JWTSecret       string
 }
 
 var Env *Config

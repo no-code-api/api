@@ -22,5 +22,6 @@ func LoadEnv() *Config {
 		PostgrePassword: os.Getenv("POSTGRE_PASSWORD"),
 		PostgreDbName:   os.Getenv("POSTGRE_DB_NAME"),
 		PostgreSSLMode:  os.Getenv("POSTGRE_SSL_MODE"),
+		JWTSecret:       os.Getenv("JWT_SECRET"),
 	}
 }
