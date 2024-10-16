@@ -15,7 +15,7 @@ type Response struct {
 }
 
 func ResOk(c *gin.Context, message string, data interface{}) {
-	resJson(c, http.StatusOK, true, message, data)
+	ResJson(c, http.StatusOK, true, message, data)
 }
 
 func ResOkData(c *gin.Context, data interface{}) {
@@ -27,20 +27,24 @@ func ResOkMessage(c *gin.Context, message string) {
 }
 
 func ResNotFound(c *gin.Context, message string) {
-	resJson(c, http.StatusNotFound, false, message, nil)
+	ResJson(c, http.StatusNotFound, false, message, nil)
 }
 
 func ResNoContent(c *gin.Context) {
-	resJson(c, http.StatusNoContent, true, "", nil)
+	ResJson(c, http.StatusNoContent, true, "", nil)
+}
+
+func ResCreated(c *gin.Context) {
+	ResJson(c, http.StatusCreated, true, "", nil)
 }
 
 func ResBadRequest(c *gin.Context, message string) {
-	resJson(c, http.StatusBadRequest, false, message, nil)
+	ResJson(c, http.StatusBadRequest, false, message, nil)
 }
 
 func ResInvalidParam(c *gin.Context, param string) {
 	message := fmt.Sprintf("Parâmetro '%v' inválido", param)
-	resJson(c, http.StatusBadRequest, false, message, nil)
+	ResJson(c, http.StatusBadRequest, false, message, nil)
 }
 
 func BindJson(c *gin.Context, obj any) error {
@@ -51,7 +55,7 @@ func BindJson(c *gin.Context, obj any) error {
 	return nil
 }
 
-func resJson(c *gin.Context, status int, success bool, message string, data interface{}) {
+func ResJson(c *gin.Context, status int, success bool, message string, data interface{}) {
 	c.JSON(status, Response{
 		Status:  status,
 		Success: success,

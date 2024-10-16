@@ -8,20 +8,19 @@ import (
 )
 
 type Claims struct {
-	UserID uint `json:"userId"`
+	UserId uint `json:"userId"`
 	jwt.RegisteredClaims
 }
 
-func getJWTSecret() []byte {
+func GetJWTSecret() []byte {
 	return []byte(config.Env.JWTSecret)
 }
 
 func GenerateJWT(userId uint) (string, error) {
-
 	oneDay := time.Hour * 24
 	jwtDuration := oneDay * 7
 	claims := &Claims{
-		UserID: userId,
+		UserId: userId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(jwtDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -29,7 +28,7 @@ func GenerateJWT(userId uint) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(getJWTSecret())
+	tokenString, err := token.SignedString(GetJWTSecret())
 	if err != nil {
 		return "", err
 	}

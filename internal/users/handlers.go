@@ -95,7 +95,7 @@ func HandleCreate(c *gin.Context) {
 		utils.ResBadRequest(c, "Erro ao criar usuário.")
 		return
 	}
-	utils.ResNoContent(c)
+	utils.ResCreated(c)
 }
 
 func HandleUpdate(c *gin.Context) {
