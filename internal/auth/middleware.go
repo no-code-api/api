@@ -25,9 +25,10 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims, valid := internalJwt.ValidateToken(headerToken)
-		if !valid {
-			utils.ResJson(c, http.StatusUnauthorized, false, "Token inválido", nil)
+		claims, err := internalJwt.ValidateToken(headerToken)
+		if err != "" {
+			msg := "Token inválido: " + err
+			utils.ResJson(c, http.StatusUnauthorized, false, msg, nil)
 			c.Abort()
 			return
 		}
