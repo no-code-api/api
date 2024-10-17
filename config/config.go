@@ -9,6 +9,9 @@ type Config struct {
 	PostgreDbName   string
 	PostgreSSLMode  string
 	JWTSecret       string
+	RedisHost       string
+	RedisPassword   string
+	RedisDb         string
 }
 
 var Env *Config

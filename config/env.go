@@ -23,5 +23,8 @@ func LoadEnv() *Config {
 		PostgreDbName:   os.Getenv("POSTGRE_DB_NAME"),
 		PostgreSSLMode:  os.Getenv("POSTGRE_SSL_MODE"),
 		JWTSecret:       os.Getenv("JWT_SECRET"),
+		RedisHost:       os.Getenv("REDIS_HOST"),
+		RedisPassword:   os.Getenv("REDIS_PASSWORD"),
+		RedisDb:         os.Getenv("REDIS_DB"),
 	}
 }
