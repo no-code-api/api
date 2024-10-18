@@ -47,12 +47,12 @@ func ResInvalidParam(c *gin.Context, param string) {
 	ResJson(c, http.StatusBadRequest, false, message, nil)
 }
 
-func BindJson(c *gin.Context, obj any) error {
+func BindJson(c *gin.Context, obj any) (success bool) {
 	if err := c.ShouldBindJSON(obj); err != nil {
 		ResBadRequest(c, "Entrada de dados inválida.")
-		return err
+		return false
 	}
-	return nil
+	return true
 }
 
 func ResJson(c *gin.Context, status int, success bool, message string, data interface{}) {

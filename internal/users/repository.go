@@ -3,96 +3,74 @@ package users
 import (
 	"github.com/leandro-d-santos/no-code-api/internal/logger"
 	"github.com/leandro-d-santos/no-code-api/pkg/database"
-	"gorm.io/gorm"
 )
 
 type IUserRepository interface {
-	Create(user *User) error
-	FindAll() ([]*User, error)
-	FindById(id uint) (*User, error)
-	FindByEmail(email string) (*User, error)
-	Update(user *User) error
-	Delete(id uint) error
+	Create(user *User) (ok bool)
+	FindAll() (users []*User, ok bool)
+	FindById(id uint) (user *User, ok bool)
+	FindByEmail(email string) (user *User, ok bool)
+	Update(user *User) (ok bool)
+	Delete(id uint) (ok bool)
 }
 
 type userRepository struct {
-	db   *gorm.DB
-	logg *logger.Logger
+	connection *database.Connection
+	logg       *logger.Logger
 }
 
 func NewRepository() IUserRepository {
 	return &userRepository{
-		db:   database.GetDb(),
-		logg: logger.NewLogger("UserRepository"),
+		connection: database.GetConnection(),
+		logg:       logger.NewLogger("UserRepository"),
 	}
 }
 
-func (r *userRepository) Create(user *User) error {
+func (r *userRepository) Create(user *User) (ok bool) {
 	user.Id = 0
-	user.setCreatedAt()
-	user.setUpdatedAt()
-	result := r.db.Create(user)
-	if result.Error != nil {
-		r.logg.ErrorF("Error creating user: %v", result.Error.Error())
-		return result.Error
-	}
-	return nil
+	user.SetCreatedAt()
+	user.SetUpdatedAt()
+	return r.connection.Save(user, false)
 }
 
-func (r *userRepository) FindAll() ([]*User, error) {
-	var users []*User
-	result := r.db.Find(&users)
-	if result.Error != nil {
-		r.logg.ErrorF("Error find users: %v", result.Error.Error())
-		return nil, result.Error
+func (r *userRepository) FindAll() (users []*User, ok bool) {
+	var result []*User
+	if ok := r.connection.Find(&result); !ok {
+		return nil, false
 	}
-	return users, nil
+	return result, true
 }
 
-func (r *userRepository) FindById(id uint) (*User, error) {
-	user := &User{}
+func (r *userRepository) FindById(id uint) (user *User, ok bool) {
+	result := &User{}
 	filter := &filter{Id: id}
-	result := r.db.Find(user, filter)
-	if result.Error != nil {
-		r.logg.ErrorF("Error find user (%d): %v", id, result.Error.Error())
-		return nil, result.Error
+	if ok := r.connection.Find(result, filter); !ok {
+		return nil, false
 	}
-	if user.Id == 0 {
-		user = nil
+	if result.Id == 0 {
+		result = nil
 	}
-	return user, nil
+	return result, true
 }
 
-func (r *userRepository) FindByEmail(email string) (*User, error) {
-	user := &User{}
+func (r *userRepository) FindByEmail(email string) (user *User, ok bool) {
+	result := &User{}
 	filter := &filter{Email: email}
-	result := r.db.Find(user, filter)
-	if result.Error != nil {
-		r.logg.ErrorF("Error find user by email(%s): %v", email, result.Error.Error())
-		return nil, result.Error
+	if ok := r.connection.Find(result, filter); !ok {
+		return nil, false
 	}
-	if user.Id == 0 {
-		user = nil
+	if result.Id == 0 {
+		result = nil
 	}
-	return user, nil
+	return result, true
 }
 
-func (r *userRepository) Update(user *User) error {
-	user.setUpdatedAt()
-	result := r.db.Save(user)
-	if result.Error != nil {
-		r.logg.ErrorF("Error update user: %v", result.Error.Error())
-		return result.Error
-	}
-	return nil
+func (r *userRepository) Update(user *User) (ok bool) {
+	user.SetUpdatedAt()
+	return r.connection.Save(user, true)
 }
 
-func (r *userRepository) Delete(id uint) error {
+func (r *userRepository) Delete(id uint) (ok bool) {
 	filter := &filter{Id: id}
-	result := r.db.Delete(&User{}, filter)
-	if result.Error != nil {
-		r.logg.ErrorF("Error delete user: %v", result.Error.Error())
-		return result.Error
-	}
-	return nil
+	return r.connection.Delete(&User{}, filter)
 }

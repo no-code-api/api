@@ -1,6 +1,8 @@
 package users
 
-import "time"
+import (
+	"github.com/leandro-d-santos/no-code-api/internal/core"
+)
 
 type loginRequest struct {
 	Email    string `json:"email"`
@@ -33,20 +35,11 @@ type UserResponse struct {
 }
 
 type User struct {
-	Id        uint      `gorm:"unique;primaryKey;autoIncrement"`
-	Name      string    `gorm:"size:150;notnull"`
-	Email     string    `gorm:"size:100;unique;notnull"`
-	Password  string    `gorm:"size:60;notnull"`
-	CreatedAt time.Time `gorm:"notnull"`
-	UpdatedAt time.Time `gorm:"notnull"`
-}
-
-func (user *User) setCreatedAt() {
-	user.CreatedAt = time.Now()
-}
-
-func (user *User) setUpdatedAt() {
-	user.UpdatedAt = time.Now()
+	core.Entity
+	Id       uint   `gorm:"unique;primaryKey;autoIncrement"`
+	Name     string `gorm:"size:150;notnull"`
+	Email    string `gorm:"size:100;unique;notnull"`
+	Password string `gorm:"size:60;notnull"`
 }
 
 func (user *createUserRequest) ToModel() *User {

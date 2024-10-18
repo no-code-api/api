@@ -14,13 +14,13 @@ func errorToSearchUser(c *gin.Context) {
 
 func HandleLogin(c *gin.Context) {
 	userRequest := &loginRequest{}
-	if err := utils.BindJson(c, userRequest); err != nil {
+	if !utils.BindJson(c, userRequest) {
 		return
 	}
 
 	repository := NewRepository()
-	user, err := repository.FindByEmail(userRequest.Email)
-	if err != nil {
+	user, ok := repository.FindByEmail(userRequest.Email)
+	if !ok {
 		errorToSearchUser(c)
 		return
 	}
@@ -47,8 +47,8 @@ func HandleLogin(c *gin.Context) {
 
 func HandleFindAll(c *gin.Context) {
 	repository := NewRepository()
-	users, err := repository.FindAll()
-	if err != nil {
+	users, ok := repository.FindAll()
+	if !ok {
 		errorToSearchUser(c)
 		return
 	}
@@ -64,8 +64,8 @@ func HandleFindAll(c *gin.Context) {
 func HandleFindById(c *gin.Context) {
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
 	repository := NewRepository()
-	user, err := repository.FindById(uint(id))
-	if err != nil {
+	user, ok := repository.FindById(uint(id))
+	if !ok {
 		errorToSearchUser(c)
 		return
 	}
@@ -80,7 +80,7 @@ func HandleFindById(c *gin.Context) {
 
 func HandleCreate(c *gin.Context) {
 	var user createUserRequest
-	if err := utils.BindJson(c, &user); err != nil {
+	if !utils.BindJson(c, &user) {
 		return
 	}
 
@@ -91,7 +91,7 @@ func HandleCreate(c *gin.Context) {
 
 	user.Password = hash
 	repository := NewRepository()
-	if err := repository.Create(user.ToModel()); err != nil {
+	if ok := repository.Create(user.ToModel()); !ok {
 		utils.ResBadRequest(c, "Erro ao criar usuário.")
 		return
 	}
@@ -101,7 +101,7 @@ func HandleCreate(c *gin.Context) {
 func HandleUpdate(c *gin.Context) {
 	id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
 	var requestUser updateUserRequest
-	if err := utils.BindJson(c, &requestUser); err != nil {
+	if !utils.BindJson(c, &requestUser) {
 		return
 	}
 	if id <= 0 || id != int64(requestUser.Id) {
@@ -109,8 +109,8 @@ func HandleUpdate(c *gin.Context) {
 		return
 	}
 	repository := NewRepository()
-	user, err := repository.FindById(requestUser.Id)
-	if err != nil {
+	user, ok := repository.FindById(requestUser.Id)
+	if !ok {
 		errorToSearchUser(c)
 		return
 	}
@@ -119,8 +119,7 @@ func HandleUpdate(c *gin.Context) {
 		return
 	}
 	user.Name = requestUser.Name
-	err = repository.Update(user)
-	if err != nil {
+	if ok := repository.Update(user); !ok {
 		utils.ResBadRequest(c, "Erro ao salvar usuário.")
 		return
 	}
@@ -136,8 +135,7 @@ func HandleDelete(c *gin.Context) {
 	}
 
 	repository := NewRepository()
-	err := repository.Delete(uint(id))
-	if err != nil {
+	if ok := repository.Delete(uint(id)); !ok {
 		utils.ResBadRequest(c, "Erro ao remover usuário.")
 		return
 	}
