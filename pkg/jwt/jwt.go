@@ -2,18 +2,15 @@ package jwt
 
 import (
 	"strconv"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/leandro-d-santos/no-code-api/config"
-	"github.com/leandro-d-santos/no-code-api/pkg/cache"
 )
 
-type Claims struct {
-	UserId uint   `json:"userId"`
-	Stamp  string `json:"stamp"`
-	jwt.RegisteredClaims
+type JwtSettings struct {
+	issuer    string
+	audience  string
+	cacheKey  string
+	jwtSecret []byte
 }
 
 const (
@@ -22,75 +19,31 @@ const (
 	cacheKey string = "tokens"
 )
 
-func GetJWTSecret() []byte {
-	return []byte(config.Env.JWTSecret)
+func NewJwtSettings() *JwtSettings {
+	return &JwtSettings{
+		issuer:    issuer,
+		audience:  audience,
+		cacheKey:  cacheKey,
+		jwtSecret: []byte(config.Env.JWTSecret),
+	}
 }
 
-func GenerateJWT(userId uint) (string, error) {
-	oneDay := time.Hour * 24
-	jwtDuration := oneDay * 7
-	uuid := uuid.NewString()
-	claims := &Claims{
-		UserId: userId,
-		Stamp:  uuid,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(jwtDuration)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Issuer:    issuer,
-			Audience:  jwt.ClaimStrings{audience},
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(GetJWTSecret())
-	if err != nil {
-		return "", err
-	}
-
-	if err := setStampInCache(userId, uuid); err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
+func (s *JwtSettings) GetJWTSecret() []byte {
+	return s.jwtSecret
 }
 
-func ValidateToken(userToken string) (*Claims, string) {
-	jwtSecret := GetJWTSecret()
-	keyFunc := func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
-	}
-
-	token, err := jwt.ParseWithClaims(userToken, &Claims{}, keyFunc)
-	if err != nil {
-		return nil, "Erro ao interpretar reivindicações"
-	}
-
-	claims, ok := token.Claims.(*Claims)
-	if !ok || !token.Valid || claims.Stamp == "" {
-		return nil, "Token inválido"
-	}
-
-	cachedStamp, err := getStampFromCache(claims.UserId)
-	if err != nil || cachedStamp == "" {
-		return nil, "Erro ao consultar carimbo salvo"
-	}
-
-	if cachedStamp != claims.Stamp {
-		return nil, "Carimbo fornecido é inválido"
-	}
-
-	return claims, ""
+func (s *JwtSettings) GetCacheKey() string {
+	return s.cacheKey
 }
 
-func getStampFromCache(userId uint) (string, error) {
-	key := buildKey(userId)
-	return cache.Get(key)
+func (s *JwtSettings) GetIssuer() string {
+	return s.issuer
 }
 
-func setStampInCache(userId uint, stamp string) error {
-	key := buildKey(userId)
-	return cache.Set(key, stamp)
+func (s *JwtSettings) GetAudience() string {
+	return s.audience
 }
 
-func buildKey(userId uint) string {
-	return cacheKey + ":" + strconv.FormatUint(uint64(userId), 10)
+func (s *JwtSettings) BuildKey(id uint) string {
+	return s.cacheKey + ":" + strconv.FormatUint(uint64(id), 10)
 }

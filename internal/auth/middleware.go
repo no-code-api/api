@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/leandro-d-santos/no-code-api/internal/jwt"
 	"github.com/leandro-d-santos/no-code-api/internal/utils"
-	internalJwt "github.com/leandro-d-santos/no-code-api/pkg/jwt"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
@@ -24,8 +24,8 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
-		claims, err := internalJwt.ValidateToken(headerToken)
+		service := jwt.NewJwtService()
+		claims, err := service.ValidateToken(headerToken)
 		if err != "" {
 			msg := "Token inválido: " + err
 			utils.ResJson(c, http.StatusUnauthorized, false, msg, nil)

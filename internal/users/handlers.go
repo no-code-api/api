@@ -4,8 +4,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/leandro-d-santos/no-code-api/internal/jwt"
 	"github.com/leandro-d-santos/no-code-api/internal/utils"
-	"github.com/leandro-d-santos/no-code-api/pkg/jwt"
 )
 
 func errorToSearchUser(c *gin.Context) {
@@ -35,7 +35,8 @@ func HandleLogin(c *gin.Context) {
 		return
 	}
 
-	token, err := jwt.GenerateJWT(user.Id)
+	service := jwt.NewJwtService()
+	token, err := service.GenerateJWT(user.Id)
 	if err != nil {
 		utils.ResBadRequest(c, "Erro ao gerar token.")
 		return
@@ -133,11 +134,19 @@ func HandleDelete(c *gin.Context) {
 		utils.ResInvalidParam(c, "id")
 		return
 	}
-
 	repository := NewRepository()
+
+	if _, ok := repository.FindById(uint(id)); !ok {
+		utils.ResBadRequest(c, "Usuário não existe.")
+		return
+	}
+
 	if ok := repository.Delete(uint(id)); !ok {
 		utils.ResBadRequest(c, "Erro ao remover usuário.")
 		return
 	}
+
+	service := jwt.NewJwtService()
+	service.RemoveStamp(uint(id))
 	utils.ResOk(c, "", nil)
 }

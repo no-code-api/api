@@ -24,13 +24,8 @@ func InitializeRedis() {
 	})
 }
 
-func Get(key string) (string, error) {
-	value, err := client.Get(ctx, key).Result()
-	if err != nil {
-		logger.ErrorF("Error to get from cache. Key: %v", key)
-		return "", err
-	}
-	return value, nil
+func Get(key string) string {
+	return client.Get(ctx, key).Val()
 }
 
 func Set(key string, value interface{}) error {
@@ -41,10 +36,6 @@ func Set(key string, value interface{}) error {
 	return err
 }
 
-func Delete(key ...string) error {
-	err := client.Del(ctx, key...).Err()
-	if err != nil {
-		logger.ErrorF("Error to delete from cache. Key: %v", key)
-	}
-	return err
+func Delete(key ...string) {
+	client.Del(ctx, key...)
 }
