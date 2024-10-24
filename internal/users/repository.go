@@ -35,7 +35,7 @@ func (r *userRepository) Create(user *User) (ok bool) {
 
 func (r *userRepository) FindAll() (users []*User, ok bool) {
 	var result []*User
-	if ok := r.connection.Find(&result); !ok {
+	if ok := r.connection.Find(&result, nil); !ok {
 		return nil, false
 	}
 	return result, true

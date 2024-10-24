@@ -74,8 +74,14 @@ func (c *Connection) Save(data interface{}, exists bool) (ok bool) {
 	return result.Error == nil
 }
 
-func (c *Connection) Find(dest interface{}, conds ...interface{}) (ok bool) {
-	if result := c.db.Find(dest, conds...); result.Error != nil {
+func (c *Connection) Find(dest interface{}, conds interface{}) (ok bool) {
+	var result *gorm.DB
+	if conds == nil {
+		result = c.db.Find(dest)
+	} else {
+		result = c.db.Where(conds).Find(dest)
+	}
+	if result.Error != nil {
 		logger.ErrorF("Error to search data: filters: %v error: %v", conds, result.Error.Error())
 		return false
 	}
