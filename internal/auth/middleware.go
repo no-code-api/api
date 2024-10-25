@@ -5,22 +5,23 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/leandro-d-santos/no-code-api/internal/handler"
 	"github.com/leandro-d-santos/no-code-api/internal/jwt"
-	"github.com/leandro-d-santos/no-code-api/internal/utils"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		handler := handler.NewBaseHandler(c)
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
-			utils.ResJson(c, http.StatusUnauthorized, false, "Cabeçalho de autenticação não encontrado", nil)
+			handler.Json(http.StatusUnauthorized, false, "Cabeçalho de autenticação não encontrado", nil)
 			c.Abort()
 			return
 		}
 		headerToken := strings.Split(authHeader, "Bearer ")[1]
 		if headerToken == "" {
-			utils.ResJson(c, http.StatusUnauthorized, false, "Formato do token inválido", nil)
+			handler.Json(http.StatusUnauthorized, false, "Formato do token inválido", nil)
 			c.Abort()
 			return
 		}
@@ -28,7 +29,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		claims, err := service.ValidateToken(headerToken)
 		if err != "" {
 			msg := "Token inválido: " + err
-			utils.ResJson(c, http.StatusUnauthorized, false, msg, nil)
+			handler.Json(http.StatusUnauthorized, false, msg, nil)
 			c.Abort()
 			return
 		}

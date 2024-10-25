@@ -3,54 +3,53 @@ package users
 import (
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/leandro-d-santos/no-code-api/internal/handler"
 	"github.com/leandro-d-santos/no-code-api/internal/jwt"
-	"github.com/leandro-d-santos/no-code-api/internal/utils"
 )
 
-func errorToSearchUser(c *gin.Context) {
-	utils.ResBadRequest(c, "Erro ao consultar usuário.")
+func errorToSearchUser(h *handler.BaseHandler) {
+	h.BadRequest("Erro ao consultar usuário.")
 }
 
-func HandleLogin(c *gin.Context) {
+func HandleLogin(h *handler.BaseHandler) {
 	userRequest := &loginRequest{}
-	if !utils.BindJson(c, userRequest) {
+	if !h.BindJson(userRequest) {
 		return
 	}
 
 	repository := NewRepository()
 	user, ok := repository.FindByEmail(userRequest.Email)
 	if !ok {
-		errorToSearchUser(c)
+		errorToSearchUser(h)
 		return
 	}
 
 	if user == nil {
-		utils.ResBadRequest(c, "Email inválido.")
+		h.BadRequest("Email inválido.")
 		return
 	}
 
 	if !VerifyPassword(userRequest.Password, user.Password) {
-		utils.ResBadRequest(c, "Senha inválida.")
+		h.BadRequest("Senha inválida.")
 		return
 	}
 
 	service := jwt.NewJwtService()
 	token, err := service.GenerateJWT(user.Id)
 	if err != nil {
-		utils.ResBadRequest(c, "Erro ao gerar token.")
+		h.BadRequest("Erro ao gerar token.")
 		return
 	}
 
 	response := &loginResponse{Token: token}
-	utils.ResOkData(c, response)
+	h.OkData(response)
 }
 
-func HandleFindAll(c *gin.Context) {
+func HandleFindAll(h *handler.BaseHandler) {
 	repository := NewRepository()
 	users, ok := repository.FindAll()
 	if !ok {
-		errorToSearchUser(c)
+		errorToSearchUser(h)
 		return
 	}
 	usersReponse := make([]*UserResponse, len(users))
@@ -59,94 +58,94 @@ func HandleFindAll(c *gin.Context) {
 		userResponse.FromModel(user)
 		usersReponse[index] = userResponse
 	}
-	utils.ResOkData(c, usersReponse)
+	h.OkData(usersReponse)
 }
 
-func HandleFindById(c *gin.Context) {
-	id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
+func HandleFindById(h *handler.BaseHandler) {
+	id, _ := strconv.ParseInt(h.Param("id"), 10, 32)
 	repository := NewRepository()
 	user, ok := repository.FindById(uint(id))
 	if !ok {
-		errorToSearchUser(c)
+		errorToSearchUser(h)
 		return
 	}
 	if user == nil {
-		utils.ResNotFound(c, "Usuário não encontrado.")
+		h.NotFound("Usuário não encontrado.")
 		return
 	}
 	userResponse := &UserResponse{}
 	userResponse.FromModel(user)
-	utils.ResOkData(c, userResponse)
+	h.OkData(userResponse)
 }
 
-func HandleCreate(c *gin.Context) {
+func HandleCreate(h *handler.BaseHandler) {
 	var user createUserRequest
-	if !utils.BindJson(c, &user) {
+	if !h.BindJson(&user) {
 		return
 	}
 
 	hash, err := HashPassword(user.Password)
 	if err != nil {
-		utils.ResBadRequest(c, "Erro ao gerar senha.")
+		h.BadRequest("Erro ao gerar senha.")
 	}
 
 	user.Password = hash
 	repository := NewRepository()
 	if ok := repository.Create(user.ToModel()); !ok {
-		utils.ResBadRequest(c, "Erro ao criar usuário.")
+		h.BadRequest("Erro ao criar usuário.")
 		return
 	}
-	utils.ResCreated(c)
+	h.Created()
 }
 
-func HandleUpdate(c *gin.Context) {
-	id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
+func HandleUpdate(h *handler.BaseHandler) {
+	id, _ := strconv.ParseInt(h.Param("id"), 10, 32)
 	var requestUser updateUserRequest
-	if !utils.BindJson(c, &requestUser) {
+	if !h.BindJson(&requestUser) {
 		return
 	}
 	if id <= 0 || id != int64(requestUser.Id) {
-		utils.ResInvalidParam(c, "id")
+		h.InvalidParam("id")
 		return
 	}
 	repository := NewRepository()
 	user, ok := repository.FindById(requestUser.Id)
 	if !ok {
-		errorToSearchUser(c)
+		errorToSearchUser(h)
 		return
 	}
 	if user == nil {
-		utils.ResNotFound(c, "Usuário não encontrado.")
+		h.NotFound("Usuário não encontrado.")
 		return
 	}
 	user.Name = requestUser.Name
 	if ok := repository.Update(user); !ok {
-		utils.ResBadRequest(c, "Erro ao salvar usuário.")
+		h.BadRequest("Erro ao salvar usuário.")
 		return
 	}
-	utils.ResOk(c, "", nil)
+	h.Ok("", nil)
 }
 
-func HandleDelete(c *gin.Context) {
-	id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
+func HandleDelete(h *handler.BaseHandler) {
+	id, _ := strconv.ParseInt(h.Param("id"), 10, 32)
 
 	if id <= 0 {
-		utils.ResInvalidParam(c, "id")
+		h.InvalidParam("id")
 		return
 	}
 	repository := NewRepository()
 
 	if _, ok := repository.FindById(uint(id)); !ok {
-		utils.ResBadRequest(c, "Usuário não existe.")
+		h.BadRequest("Usuário não existe.")
 		return
 	}
 
 	if ok := repository.Delete(uint(id)); !ok {
-		utils.ResBadRequest(c, "Erro ao remover usuário.")
+		h.BadRequest("Erro ao remover usuário.")
 		return
 	}
 
 	service := jwt.NewJwtService()
 	service.RemoveStamp(uint(id))
-	utils.ResOk(c, "", nil)
+	h.Ok("", nil)
 }
