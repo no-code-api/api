@@ -160,7 +160,7 @@ func PathAvailable(baseHandler *handler.BaseHandler, repository IRepository, end
 }
 
 func FindProject(baseHandler *handler.BaseHandler, projectRepository projects.IProjectRepository, projectId string) *projects.Project {
-	project, ok := projectRepository.FindProjectById(projectId)
+	project, ok := projectRepository.FindById(projectId)
 	if !ok {
 		baseHandler.BadRequest("Erro ao consultar projeto")
 		return nil
