@@ -73,9 +73,9 @@ func handleUpdate(h *handler.BaseHandler) {
 }
 
 func handleDeleteByUser(h *handler.BaseHandler) {
-	id := h.Param("id")
+	id := h.Param("projectId")
 	if id == "" {
-		h.InvalidParam("id")
+		h.InvalidParam("Código projeto não informado")
 		return
 	}
 

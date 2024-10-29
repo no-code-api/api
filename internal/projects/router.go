@@ -12,5 +12,5 @@ func RegisterRoutesV1(rg *gin.RouterGroup) {
 	routes.POST("/", handler.Wrapper(handleCreate))
 	routes.GET("/", handler.Wrapper(handleFindByUser))
 	routes.PUT("/", handler.Wrapper(handleUpdate))
-	routes.DELETE("/:id", handler.Wrapper(handleDeleteByUser))
+	routes.DELETE("/:projectId", handler.Wrapper(handleDeleteByUser))
 }

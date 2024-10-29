@@ -21,7 +21,7 @@ type findFilter struct {
 
 type Project struct {
 	core.Entity
-	Id     string     `gorm:"size:32;unique;primaryKet;autoIncrement"`
+	Id     string     `gorm:"size:32;primaryKey"`
 	UserId uint       `gorm:"notnull"`
 	User   users.User `gorm:"foreignKey:UserId;references:Id"`
 	Name   string     `gorm:"size:30;notnull"`
