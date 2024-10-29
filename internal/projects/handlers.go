@@ -1,98 +1,81 @@
 package projects
 
 import (
-	"fmt"
-
 	"github.com/leandro-d-santos/no-code-api/internal/handler"
-	"github.com/leandro-d-santos/no-code-api/internal/users"
 )
 
-func handleCreate(h *handler.BaseHandler) {
+type ProjectHandler struct {
+	DefaultPath    string
+	projectService ProjectService
+}
+
+func NewHandler() ProjectHandler {
+	return ProjectHandler{
+		DefaultPath:    "/projects",
+		projectService: NewService(),
+	}
+}
+
+func (handler ProjectHandler) HandleCreate(baseHandler *handler.BaseHandler) {
+	userId, ok := baseHandler.GetUserId()
+	if !ok {
+		return
+	}
+	project := &CreateProjectViewModel{}
+	if !baseHandler.BindJson(project) {
+		return
+	}
+	project.UserId = userId
+	if err := handler.projectService.Create(project); err != nil {
+		baseHandler.BadRequest(err.Error())
+		return
+	}
+	baseHandler.OkData("Projeto criado com sucesso.")
+}
+
+func (handler ProjectHandler) HandleFindByUser(h *handler.BaseHandler) {
 	userId, ok := h.GetUserId()
 	if !ok {
 		return
 	}
-
-	projectRequest := &createProjectRequest{}
-	if !h.BindJson(projectRequest) {
+	projects, err := handler.projectService.FindByUser(userId)
+	if err != nil {
+		h.BadRequest(err.Error())
 		return
 	}
-
-	repository := NewRepository()
-	project := &Project{
-		Name: projectRequest.Name,
-		User: users.User{Id: userId},
-	}
-	if ok := repository.Create(project); !ok {
-		h.BadRequest("Erro ao cadastrar projeto.")
-		return
-	}
-	h.OkData("Projeto criado com sucesso.")
+	h.OkData(projects)
 }
 
-func handleFindByUser(h *handler.BaseHandler) {
-	userId, ok := h.GetUserId()
-	if !ok {
-		return
-	}
-
-	repository := NewRepository()
-	projects, ok := repository.FindByUser(userId)
-	if !ok {
-		h.BadRequest("Erro ao consultar projetos.")
-		return
-	}
-	projectsResponse := make([]projectResponse, len(projects))
-	for index, project := range projects {
-		response := projectResponse{}
-		response.FromModel(project)
-		projectsResponse[index] = response
-	}
-	h.OkData(projectsResponse)
-}
-
-func handleUpdate(h *handler.BaseHandler) {
-	projectRequest := &updateProjectRequest{}
-	if !h.BindJson(projectRequest) {
-		return
-	}
-
-	repository := NewRepository()
-	project, ok := repository.FindById(projectRequest.Id)
-	if !ok {
-		h.BadRequest("Projeto não encontrado.")
-		return
-	}
-
-	project.Name = projectRequest.Name
-	if ok := repository.Update(project); !ok {
-		h.BadRequest("Erro ao cadastrar projeto.")
-		return
-	}
-	h.OkData("Projeto criado com sucesso.")
-}
-
-func handleDeleteByUser(h *handler.BaseHandler) {
-	id := h.Param("projectId")
+func (handler ProjectHandler) HandleUpdate(baseHandler *handler.BaseHandler) {
+	id := baseHandler.Param("projectId")
 	if id == "" {
-		h.InvalidParam("Código projeto não informado")
+		baseHandler.BadRequest("Código projeto não informado")
 		return
 	}
+	project := &UpdateProjectViewModel{}
+	if !baseHandler.BindJson(project) {
+		return
+	}
+	if project.Id != id {
+		baseHandler.InvalidParam("Código projeto")
+		return
+	}
+	if err := handler.projectService.Update(project); err != nil {
+		baseHandler.BadRequest(err.Error())
+		return
+	}
+	baseHandler.OkData("Projeto atualizado com sucesso.")
+}
 
-	repository := NewRepository()
-	project, ok := repository.FindById(id)
-	if !ok {
-		h.BadRequest("Erro ao consultar projetos.")
+func (handler ProjectHandler) HandleDeleteByUser(baseHandler *handler.BaseHandler) {
+	id := baseHandler.Param("projectId")
+	if id == "" {
+		baseHandler.BadRequest("Código projeto não informado")
 		return
 	}
-	if project == nil {
-		message := fmt.Sprintf("Projeto '%v' não existe.", id)
-		h.BadRequest(message)
+	if err := handler.projectService.Delete(id); err != nil {
+		baseHandler.BadRequest(err.Error())
 		return
 	}
-	if ok := repository.DeleteById(id); !ok {
-		h.BadRequest("Erro ao remover projeto")
-		return
-	}
-	h.OkMessage("Projeto deletado com sucesso.")
+	baseHandler.OkMessage("Projeto deletado com sucesso.")
 }

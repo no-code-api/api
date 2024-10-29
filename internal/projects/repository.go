@@ -18,9 +18,9 @@ type projectRepository struct {
 	logger     *logger.Logger
 }
 
-func NewRepository() IProjectRepository {
+func NewRepository(connection *database.Connection) IProjectRepository {
 	return &projectRepository{
-		connection: database.GetConnection(),
+		connection: connection,
 		logger:     logger.NewLogger("ProjectRepository"),
 	}
 }

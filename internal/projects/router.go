@@ -9,8 +9,9 @@ import (
 func RegisterRoutesV1(rg *gin.RouterGroup) {
 	routes := rg.Group("/projects")
 	routes.Use(auth.AuthMiddleware())
-	routes.POST("/", handler.Wrapper(handleCreate))
-	routes.GET("/", handler.Wrapper(handleFindByUser))
-	routes.PUT("/", handler.Wrapper(handleUpdate))
-	routes.DELETE("/:projectId", handler.Wrapper(handleDeleteByUser))
+	projectHandler := NewHandler()
+	routes.POST("/", handler.Wrapper(projectHandler.HandleCreate))
+	routes.GET("/", handler.Wrapper(projectHandler.HandleFindByUser))
+	routes.PUT("/:projectId", handler.Wrapper(projectHandler.HandleUpdate))
+	routes.DELETE("/:projectId", handler.Wrapper(projectHandler.HandleDeleteByUser))
 }
