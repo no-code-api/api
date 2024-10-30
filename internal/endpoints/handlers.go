@@ -20,7 +20,7 @@ func NewEndpointHandler() EndpointHandler {
 	return EndpointHandler{
 		DefaultPath:        "/projects/:projectId/endpoints",
 		EndpointRepository: NewRepository(connection),
-		ProjectRepository:  projects.NewRepository(),
+		ProjectRepository:  projects.NewRepository(connection),
 	}
 }
 
