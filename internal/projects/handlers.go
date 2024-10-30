@@ -33,17 +33,17 @@ func (handler ProjectHandler) HandleCreate(baseHandler *handler.BaseHandler) {
 	baseHandler.OkData("Projeto criado com sucesso.")
 }
 
-func (handler ProjectHandler) HandleFindByUser(h *handler.BaseHandler) {
-	userId, ok := h.GetUserId()
+func (handler ProjectHandler) HandleFindByUser(baseHandler *handler.BaseHandler) {
+	userId, ok := baseHandler.GetUserId()
 	if !ok {
 		return
 	}
 	projects, err := handler.projectService.FindByUser(userId)
 	if err != nil {
-		h.BadRequest(err.Error())
+		baseHandler.BadRequest(err.Error())
 		return
 	}
-	h.OkData(projects)
+	baseHandler.OkData(projects)
 }
 
 func (handler ProjectHandler) HandleUpdate(baseHandler *handler.BaseHandler) {

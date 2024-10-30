@@ -5,26 +5,9 @@ import (
 	"github.com/leandro-d-santos/no-code-api/internal/projects"
 )
 
-type createEndpointRequest struct {
-	Path   string `json:"path"`
-	Method string `json:"method"`
-}
-
-type updateEndpointRequest struct {
-	Id     uint   `json:"id"`
-	Path   string `json:"path"`
-	Method string `json:"method"`
-}
-
 type findEndpointFilter struct {
 	ProjectId string
 	Id        uint
-}
-
-type endpointResponse struct {
-	Id     uint   `json:"id"`
-	Path   string `json:"path"`
-	Method string `json:"method"`
 }
 
 type Endpoint struct {
@@ -35,17 +18,4 @@ type Endpoint struct {
 	Schema    string           `gorm:"size:300;notnull"`
 	ProjectId string           `gorm:"size:32;notnull"`
 	Project   projects.Project `gorm:"foreignKey:ProjectId;references:Id"`
-}
-
-func (ep *createEndpointRequest) ToModel() *Endpoint {
-	return &Endpoint{
-		Path:   ep.Path,
-		Method: ep.Method,
-	}
-}
-
-func (ep *endpointResponse) FromModel(endpoint *Endpoint) {
-	ep.Id = endpoint.Id
-	ep.Path = endpoint.Path
-	ep.Method = endpoint.Method
 }
