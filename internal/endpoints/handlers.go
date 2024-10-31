@@ -32,7 +32,7 @@ func (handler *EndpointHandler) HandleCreate(baseHandler *handler.BaseHandler) {
 		baseHandler.BadRequest(err.Error())
 		return
 	}
-	baseHandler.OkData("Endpoint criado com sucesso.")
+	baseHandler.Created()
 }
 
 func (handler *EndpointHandler) HandleFindAll(baseHandler *handler.BaseHandler) {

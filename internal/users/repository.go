@@ -19,9 +19,9 @@ type userRepository struct {
 	logg       *logger.Logger
 }
 
-func NewRepository() IUserRepository {
+func NewRepository(connection *database.Connection) IUserRepository {
 	return &userRepository{
-		connection: database.GetConnection(),
+		connection: connection,
 		logg:       logger.NewLogger("UserRepository"),
 	}
 }

@@ -30,7 +30,7 @@ func (handler ProjectHandler) HandleCreate(baseHandler *handler.BaseHandler) {
 		baseHandler.BadRequest(err.Error())
 		return
 	}
-	baseHandler.OkData("Projeto criado com sucesso.")
+	baseHandler.Created()
 }
 
 func (handler ProjectHandler) HandleFindByUser(baseHandler *handler.BaseHandler) {
