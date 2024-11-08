@@ -36,6 +36,18 @@ func (h *BaseHandler) Param(param string) string {
 	return h.context.Param(param)
 }
 
+func (h *BaseHandler) Host() string {
+	return h.context.Request.Host
+}
+
+func (h *BaseHandler) Path() string {
+	return h.context.Request.URL.Path
+}
+
+func (h *BaseHandler) Method() string {
+	return h.context.Request.Method
+}
+
 func (h *BaseHandler) Ok(message string, data interface{}) {
 	h.Json(http.StatusOK, true, message, data)
 }

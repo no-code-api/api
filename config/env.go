@@ -26,5 +26,6 @@ func LoadEnv() *Config {
 		RedisHost:       os.Getenv("REDIS_HOST"),
 		RedisPassword:   os.Getenv("REDIS_PASSWORD"),
 		RedisDb:         os.Getenv("REDIS_DB"),
+		InternalDomain:  os.Getenv("INTERNAL_DOMAIN"),
 	}
 }

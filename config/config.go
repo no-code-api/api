@@ -12,6 +12,7 @@ type Config struct {
 	RedisHost       string
 	RedisPassword   string
 	RedisDb         string
+	InternalDomain  string
 }
 
 var Env *Config
