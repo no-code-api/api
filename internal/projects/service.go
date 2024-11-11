@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leandro-d-santos/no-code-api/internal/users"
-	"github.com/leandro-d-santos/no-code-api/pkg/database"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type ProjectService struct {
@@ -14,7 +14,7 @@ type ProjectService struct {
 
 func NewService() ProjectService {
 	return ProjectService{
-		projectRepository: NewRepository(database.GetConnection()),
+		projectRepository: NewRepository(postgre.GetConnection()),
 	}
 }
 

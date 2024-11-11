@@ -2,7 +2,7 @@ package endpoints
 
 import (
 	"github.com/leandro-d-santos/no-code-api/internal/logger"
-	"github.com/leandro-d-santos/no-code-api/pkg/database"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type IRepository interface {
@@ -15,11 +15,11 @@ type IRepository interface {
 }
 
 type repository struct {
-	connection *database.Connection
+	connection *postgre.Connection
 	logger     *logger.Logger
 }
 
-func NewRepository(connection *database.Connection) IRepository {
+func NewRepository(connection *postgre.Connection) IRepository {
 	return &repository{
 		connection: connection,
 		logger:     logger.NewLogger("EndpointRepository"),
@@ -27,51 +27,57 @@ func NewRepository(connection *database.Connection) IRepository {
 }
 
 func (r *repository) CreateEndpoint(endpoint *Endpoint) (ok bool) {
-	endpoint.Id = 0
-	endpoint.SetCreatedAt()
-	endpoint.SetUpdatedAt()
-	return r.connection.Save(endpoint, false)
+	// endpoint.Id = 0
+	// endpoint.SetCreatedAt()
+	// endpoint.SetUpdatedAt()
+	// return r.connection.Save(endpoint, false)
+	return true
 }
 
 func (r *repository) UpdateEndpoint(endpoint *Endpoint) (ok bool) {
-	endpoint.SetUpdatedAt()
-	return r.connection.Save(endpoint, true)
+	// endpoint.SetUpdatedAt()
+	// return r.connection.Save(endpoint, true)
+	return true
 }
 
 func (r *repository) FindEndpointById(projectId string, id uint) (endpoint *Endpoint, ok bool) {
-	var result *Endpoint
-	filter := &findEndpointFilter{ProjectId: projectId, Id: id}
-	if ok := r.connection.Find(&result, filter); !ok {
-		return nil, false
-	}
-	if result.Id == 0 {
-		result = nil
-	}
-	return result, true
+	// var result *Endpoint
+	// filter := &findEndpointFilter{ProjectId: projectId, Id: id}
+	// if ok := r.connection.Find(&result, filter); !ok {
+	// 	return nil, false
+	// }
+	// if result.Id == 0 {
+	// 	result = nil
+	// }
+	// return result, true
+	return nil, true
 }
 
 func (r *repository) PathAvailable(endpoint *Endpoint) (available bool, ok bool) {
-	var result *Endpoint
-	query := "project_id=? and id <> ? and method=? and path=?"
-	if ok := r.connection.FindQuery(&result, query, endpoint.ProjectId, endpoint.Id, endpoint.Method, endpoint.Path); !ok {
-		return false, false
-	}
-	return result.Id == 0, true
+	// var result *Endpoint
+	// query := "project_id=? and id <> ? and method=? and path=?"
+	// if ok := r.connection.FindQuery(&result, query, endpoint.ProjectId, endpoint.Id, endpoint.Method, endpoint.Path); !ok {
+	// 	return false, false
+	// }
+	// return result.Id == 0, true
+	return false, true
 }
 
 func (r *repository) FindAllEndpoints(projectId string) (endpoints []*Endpoint, ok bool) {
-	var result []*Endpoint
-	filter := &findEndpointFilter{ProjectId: projectId}
-	if ok := r.connection.Find(&result, filter); !ok {
-		return nil, false
-	}
-	return result, true
+	// var result []*Endpoint
+	// filter := &findEndpointFilter{ProjectId: projectId}
+	// if ok := r.connection.Find(&result, filter); !ok {
+	// 	return nil, false
+	// }
+	// return result, true
+	return nil, true
 }
 
 func (r *repository) DeleteEndpoint(projectId string, id uint) (ok bool) {
-	filter := struct {
-		ProjectId string
-		Id        uint
-	}{ProjectId: projectId, Id: id}
-	return r.connection.Delete(&Endpoint{}, filter)
+	// filter := struct {
+	// 	ProjectId string
+	// 	Id        uint
+	// }{ProjectId: projectId, Id: id}
+	// return r.connection.Delete(&Endpoint{}, filter)
+	return true
 }

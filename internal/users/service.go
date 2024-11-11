@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/leandro-d-santos/no-code-api/internal/jwt"
-	"github.com/leandro-d-santos/no-code-api/pkg/database"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type UserService struct {
@@ -13,7 +13,7 @@ type UserService struct {
 
 func NewService() UserService {
 	return UserService{
-		userRepository: NewRepository(database.GetConnection()),
+		userRepository: NewRepository(postgre.GetConnection()),
 	}
 }
 
