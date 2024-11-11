@@ -1,4 +1,4 @@
-package endpoints
+package resources
 
 type FindEndpointResponse struct {
 	Id     uint   `json:"id"`

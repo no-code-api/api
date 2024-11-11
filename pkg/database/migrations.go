@@ -9,7 +9,7 @@ import (
 func RunMigrations(db *gorm.DB) {
 	CreateUserTable(db)
 	CreateProjectsTable(db)
-	CreateEndpointsTable(db)
+	CreateResourcesTable(db)
 }
 
 type User struct {
@@ -24,25 +24,33 @@ type User struct {
 type Project struct {
 	Id        string    `gorm:"size:32;unique;primaryKey"`
 	UserId    uint      `gorm:"notnull"`
-	User      User      `gorm:"foreignKey:UserId;references:Id"`
+	User      User      `gorm:"foreignKey:UserId;references:id"`
 	Name      string    `gorm:"size:30;notnull"`
 	CreatedAt time.Time `gorm:"notnull"`
 	UpdatedAt time.Time `gorm:"notnull"`
 }
 
+type Resource struct {
+	Id        string      `gorm:"size:32;notnull;primaryKey"`
+	ProjectId string      `gorm:"size:32;notnull"`
+	Path      string      `gorm:"size:50;notnull"`
+	Project   Project     `gorm:"foreignKey:ProjectId;references:id"`
+	Endpoints []*Endpoint `gorm:"foreignKey:ResourceId"`
+	CreatedAt time.Time   `gorm:"notnull"`
+	UpdatedAt time.Time   `gorm:"notnull"`
+}
+
 type Endpoint struct {
-	Id        uint      `gorm:"primaryKey;autoIncrement"`
-	Path      string    `gorm:"size:50;notnull"`
-	Method    string    `gorm:"size:10;notnull"`
-	Schema    string    `gorm:"size:300;notnull"`
-	ProjectId string    `gorm:"size:32;notnull"`
-	Project   Project   `gorm:"foreignKey:ProjectId;references:Id"`
-	CreatedAt time.Time `gorm:"notnull"`
-	UpdatedAt time.Time `gorm:"notnull"`
+	Id         uint      `gorm:"primaryKey;autoIncrement"`
+	Path       string    `gorm:"size:50;notnull"`
+	Method     string    `gorm:"size:10;notnull"`
+	ResourceId string    `gorm:"size:32;notnull"`
+	Resource   Resource  `gorm:"foreignKey:ResourceId;references:id"`
+	CreatedAt  time.Time `gorm:"notnull"`
+	UpdatedAt  time.Time `gorm:"notnull"`
 }
 
 func CreateUserTable(db *gorm.DB) {
-
 	if !Exists(db, &User{}) {
 		db.Migrator().CreateTable(&User{})
 	}
@@ -52,6 +60,13 @@ func CreateProjectsTable(db *gorm.DB) {
 	if !Exists(db, &Project{}) {
 		db.Migrator().CreateTable(&Project{})
 	}
+}
+
+func CreateResourcesTable(db *gorm.DB) {
+	if !Exists(db, &Resource{}) {
+		db.Migrator().CreateTable(&Resource{})
+	}
+	CreateEndpointsTable(db)
 }
 
 func CreateEndpointsTable(db *gorm.DB) {

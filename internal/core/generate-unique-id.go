@@ -1,4 +1,4 @@
-package projects
+package core
 
 import (
 	"strings"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func generateUniqueId() string {
+func GenerateUniqueId() string {
 	uui := uuid.New()
 	return strings.Replace(uui.String(), "-", "", -1)
 }

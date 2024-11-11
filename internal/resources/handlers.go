@@ -1,4 +1,4 @@
-package endpoints
+package resources
 
 import (
 	"strconv"
@@ -6,36 +6,36 @@ import (
 	"github.com/leandro-d-santos/no-code-api/internal/handler"
 )
 
-type EndpointHandler struct {
+type ResourceHandler struct {
 	DefaultPath     string
-	endpointService EndpointService
+	endpointService ResourceService
 }
 
-func NewEndpointHandler() EndpointHandler {
-	return EndpointHandler{
-		DefaultPath:     "/projects/:projectId/endpoints",
+func NewEndpointHandler() ResourceHandler {
+	return ResourceHandler{
+		DefaultPath:     "/projects/:projectId/resources",
 		endpointService: NewService(),
 	}
 }
 
-func (handler *EndpointHandler) HandleCreate(baseHandler *handler.BaseHandler) {
+func (handler *ResourceHandler) HandleCreate(baseHandler *handler.BaseHandler) {
 	projectId := GetProjectId(baseHandler)
 	if projectId == "" {
 		return
 	}
-	endpoint := &CreateEndpointRequest{}
-	if !baseHandler.BindJson(endpoint) {
+	resource := &CreateResourceRequest{}
+	if !baseHandler.BindJson(resource) {
 		return
 	}
-	endpoint.ProjectId = projectId
-	if err := handler.endpointService.Create(endpoint); err != nil {
+	resource.ProjectId = projectId
+	if err := handler.endpointService.Create(resource); err != nil {
 		baseHandler.BadRequest(err.Error())
 		return
 	}
 	baseHandler.Created()
 }
 
-func (handler *EndpointHandler) HandleFindAll(baseHandler *handler.BaseHandler) {
+func (handler *ResourceHandler) HandleFindAll(baseHandler *handler.BaseHandler) {
 	projectId := GetProjectId(baseHandler)
 	if projectId == "" {
 		return
@@ -50,7 +50,7 @@ func (handler *EndpointHandler) HandleFindAll(baseHandler *handler.BaseHandler) 
 	baseHandler.OkData(endPoints)
 }
 
-func (handler *EndpointHandler) HandleUpdate(baseHandler *handler.BaseHandler) {
+func (handler *ResourceHandler) HandleUpdate(baseHandler *handler.BaseHandler) {
 	projectId := GetProjectId(baseHandler)
 	if projectId == "" {
 		return
@@ -76,7 +76,7 @@ func (handler *EndpointHandler) HandleUpdate(baseHandler *handler.BaseHandler) {
 	baseHandler.OkData("Endpoint atualizado com sucesso.")
 }
 
-func (handler *EndpointHandler) HandleDelete(baseHandler *handler.BaseHandler) {
+func (handler *ResourceHandler) HandleDelete(baseHandler *handler.BaseHandler) {
 	projectId := GetProjectId(baseHandler)
 	if projectId == "" {
 		return

@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"github.com/leandro-d-santos/no-code-api/internal/core"
 	"github.com/leandro-d-santos/no-code-api/internal/logger"
 	"github.com/leandro-d-santos/no-code-api/pkg/database"
 )
@@ -26,7 +27,7 @@ func NewRepository(connection *database.Connection) IProjectRepository {
 }
 
 func (r *projectRepository) Create(project *Project) (ok bool) {
-	project.Id = generateUniqueId()
+	project.Id = core.GenerateUniqueId()
 	project.SetCreatedAt()
 	project.SetUpdatedAt()
 	return r.connection.Save(project, false)

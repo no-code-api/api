@@ -1,4 +1,4 @@
-package endpoints
+package resources
 
 type UpdateEndpointRequest struct {
 	Id        uint   `json:"id"`
