@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leandro-d-santos/no-code-api/internal/projects"
-	"github.com/leandro-d-santos/no-code-api/pkg/database"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type EndpointService struct {
@@ -14,7 +14,7 @@ type EndpointService struct {
 }
 
 func NewService() EndpointService {
-	connection := database.GetConnection()
+	connection := postgre.GetConnection()
 	return EndpointService{
 		endpointRepository: NewRepository(connection),
 		projectRepository:  projects.NewRepository(connection),

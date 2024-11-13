@@ -2,7 +2,8 @@ package users
 
 import (
 	"github.com/leandro-d-santos/no-code-api/internal/logger"
-	"github.com/leandro-d-santos/no-code-api/pkg/database"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre/utils"
 )
 
 type IUserRepository interface {
@@ -15,11 +16,11 @@ type IUserRepository interface {
 }
 
 type userRepository struct {
-	connection *database.Connection
+	connection *postgre.Connection
 	logg       *logger.Logger
 }
 
-func NewRepository(connection *database.Connection) IUserRepository {
+func NewRepository(connection *postgre.Connection) IUserRepository {
 	return &userRepository{
 		connection: connection,
 		logg:       logger.NewLogger("UserRepository"),
@@ -27,50 +28,113 @@ func NewRepository(connection *database.Connection) IUserRepository {
 }
 
 func (r *userRepository) Create(user *User) (ok bool) {
-	user.Id = 0
-	user.SetCreatedAt()
-	user.SetUpdatedAt()
-	return r.connection.Save(user, false)
+	command := utils.NewStringBuilder()
+	command.AppendLine("INSERT INTO users")
+	command.AppendLine("(name, email, password, createdAt, updatedAt)")
+	command.AppendFormat("VALUES (%s", utils.SqlString(user.Name)).AppendNewLine()
+	command.AppendFormat(",%s", utils.SqlString(user.Email)).AppendNewLine()
+	command.AppendFormat(",%s", utils.SqlString(user.Password)).AppendNewLine()
+	command.AppendLine(",NOW()")
+	command.AppendLine(",NOW())")
+	if err := r.connection.ExecuteNonQuery(command.String()); err != nil {
+		r.logg.ErrorF("error to insert user: %s", err.Error())
+		return false
+	}
+	return true
 }
 
 func (r *userRepository) FindAll() (users []*User, ok bool) {
-	var result []*User
-	if ok := r.connection.Find(&result, nil); !ok {
-		return nil, false
-	}
-	return result, true
+	return r.FindUsers(&UserFilter{})
 }
 
 func (r *userRepository) FindById(id uint) (user *User, ok bool) {
-	result := &User{}
-	filter := &filter{Id: id}
-	if ok := r.connection.Find(result, filter); !ok {
+	users, ok := r.FindUsers(&UserFilter{Id: id})
+	if !ok {
 		return nil, false
 	}
-	if result.Id == 0 {
-		result = nil
+	user = nil
+	if len(users) > 0 {
+		user = users[0]
 	}
-	return result, true
+	return user, true
 }
 
-func (r *userRepository) FindByEmail(email string) (user *User, ok bool) {
-	result := &User{}
-	filter := &filter{Email: email}
-	if ok := r.connection.Find(result, filter); !ok {
+func (r *userRepository) FindByEmail(email string) (*User, bool) {
+	users, ok := r.FindUsers(&UserFilter{Email: email})
+	if !ok {
 		return nil, false
 	}
-	if result.Id == 0 {
-		result = nil
+	var user *User = nil
+	if len(users) > 0 {
+		user = users[0]
 	}
-	return result, true
+	return user, true
 }
 
-func (r *userRepository) Update(user *User) (ok bool) {
-	user.SetUpdatedAt()
-	return r.connection.Save(user, true)
+func (r *userRepository) Update(user *User) bool {
+	command := utils.NewStringBuilder()
+	command.AppendLine("UPDATE users")
+	command.AppendFormat("SET name=%s", utils.SqlString(user.Name)).AppendNewLine()
+	command.AppendLine(",updatedAt=NOW()")
+	command.AppendFormat("WHERE id=%d", user.Id)
+	if err := r.connection.ExecuteNonQuery(command.String()); err != nil {
+		r.logg.ErrorF("error to update user: %s", err.Error())
+		return false
+	}
+	return true
 }
 
 func (r *userRepository) Delete(id uint) (ok bool) {
-	filter := &filter{Id: id}
-	return r.connection.Delete(&User{}, filter)
+	command := utils.NewStringBuilder()
+	command.AppendLine("DELETE FROM users")
+	command.AppendFormat("WHERE id=%d", id)
+	if err := r.connection.ExecuteNonQuery(command.String()); err != nil {
+		r.logg.ErrorF("error to delete user: %s", err.Error())
+		return false
+	}
+	return true
+}
+
+func (r *userRepository) FindUsers(filter *UserFilter) ([]*User, bool) {
+	query := utils.NewStringBuilder()
+	query.AppendLine(r.GetQuery())
+	query.AppendLine(r.GetQueryFilter(filter))
+	result, err := r.connection.ExecuteQuery(query.String())
+	if err != nil {
+		return nil, false
+	}
+
+	var users []*User
+	for result.Next() {
+		user := &User{
+			Id:       uint(result.ReadInt("id")),
+			Name:     result.ReadString("name"),
+			Email:    result.ReadString("email"),
+			Password: result.ReadString("password"),
+		}
+		users = append(users, user)
+	}
+	return users, true
+}
+
+func (r *userRepository) GetQuery() string {
+	query := utils.NewStringBuilder()
+	query.AppendLine("SELECT id")
+	query.AppendLine(",name")
+	query.AppendLine(",email")
+	query.AppendLine(",password")
+	query.AppendLine("FROM users")
+	return query.String()
+}
+
+func (r *userRepository) GetQueryFilter(filter *UserFilter) string {
+	query := utils.NewStringBuilder()
+	query.AppendLine("WHERE 1=1")
+	if filter.Id > 0 {
+		query.AppendFormat("AND id=%d", filter.Id).AppendNewLine()
+	}
+	if filter.Email != "" {
+		query.AppendFormat("AND email=%s", utils.SqlString(filter.Email))
+	}
+	return query.String()
 }

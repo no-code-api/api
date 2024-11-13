@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/leandro-d-santos/no-code-api/internal/users"
-	"github.com/leandro-d-santos/no-code-api/pkg/database"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type ProjectService struct {
@@ -14,14 +13,15 @@ type ProjectService struct {
 
 func NewService() ProjectService {
 	return ProjectService{
-		projectRepository: NewRepository(database.GetConnection()),
+		projectRepository: NewRepository(postgre.GetConnection()),
 	}
 }
 
 func (s ProjectService) Create(pv *CreateProjectViewModel) error {
 	project := &Project{
-		Name: pv.Name,
-		User: users.User{Id: pv.UserId},
+		Name:        pv.Name,
+		Description: pv.Description,
+		UserId:      pv.UserId,
 	}
 	if ok := s.projectRepository.Create(project); !ok {
 		return errors.New("erro ao cadastrar projeto")
@@ -49,6 +49,7 @@ func (s ProjectService) Update(pv *UpdateProjectViewModel) error {
 		return err
 	}
 	project.Name = pv.Name
+	project.Description = pv.Description
 	if ok := s.projectRepository.Update(project); !ok {
 		return errors.New("erro ao atualizar projeto")
 	}
