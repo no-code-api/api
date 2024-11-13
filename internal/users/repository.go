@@ -44,38 +44,31 @@ func (r *userRepository) Create(user *User) (ok bool) {
 }
 
 func (r *userRepository) FindAll() (users []*User, ok bool) {
-	// var result []*User
-	// if ok := r.connection.Find(&result, nil); !ok {
-	// 	return nil, false
-	// }
-	// return result, true
-	return nil, true
+	return r.FindUsers(&UserFilter{})
 }
 
 func (r *userRepository) FindById(id uint) (user *User, ok bool) {
-	// result := &User{}
-	// filter := &filter{Id: id}
-	// if ok := r.connection.Find(result, filter); !ok {
-	// 	return nil, false
-	// }
-	// if result.Id == 0 {
-	// 	result = nil
-	// }
-	// return result, true
-	return nil, true
+	users, ok := r.FindUsers(&UserFilter{Id: id})
+	if !ok {
+		return nil, false
+	}
+	user = nil
+	if len(users) > 0 {
+		user = users[0]
+	}
+	return user, true
 }
 
-func (r *userRepository) FindByEmail(email string) (user *User, ok bool) {
-	// result := &User{}
-	// filter := &filter{Email: email}
-	// if ok := r.connection.Find(result, filter); !ok {
-	// 	return nil, false
-	// }
-	// if result.Id == 0 {
-	// 	result = nil
-	// }
-	// return result, true
-	return nil, true
+func (r *userRepository) FindByEmail(email string) (*User, bool) {
+	users, ok := r.FindUsers(&UserFilter{Email: email})
+	if !ok {
+		return nil, false
+	}
+	var user *User = nil
+	if len(users) > 0 {
+		user = users[0]
+	}
+	return user, true
 }
 
 func (r *userRepository) Update(user *User) bool {
@@ -92,7 +85,56 @@ func (r *userRepository) Update(user *User) bool {
 }
 
 func (r *userRepository) Delete(id uint) (ok bool) {
-	// filter := &filter{Id: id}
-	// return r.connection.Delete(&User{}, filter)
+	command := utils.NewStringBuilder()
+	command.AppendLine("DELETE FROM users")
+	command.AppendFormat("WHERE id=%d", id)
+	if err := r.connection.ExecuteNonQuery(command.String()); err != nil {
+		r.logg.ErrorF("error to delete user: %s", err.Error())
+		return false
+	}
 	return true
+}
+
+func (r *userRepository) FindUsers(filter *UserFilter) ([]*User, bool) {
+	query := utils.NewStringBuilder()
+	query.AppendLine(r.GetQuery())
+	query.AppendLine(r.GetQueryFilter(filter))
+	result, err := r.connection.ExecuteQuery(query.String())
+	if err != nil {
+		return nil, false
+	}
+
+	var users []*User
+	for result.Next() {
+		user := &User{
+			Id:       uint(result.ReadUint("id")),
+			Name:     result.ReadString("name"),
+			Email:    result.ReadString("email"),
+			Password: result.ReadString("password"),
+		}
+		users = append(users, user)
+	}
+	return users, true
+}
+
+func (r *userRepository) GetQuery() string {
+	query := utils.NewStringBuilder()
+	query.AppendLine("SELECT id")
+	query.AppendLine(",name")
+	query.AppendLine(",email")
+	query.AppendLine(",password")
+	query.AppendLine("FROM users")
+	return query.String()
+}
+
+func (r *userRepository) GetQueryFilter(filter *UserFilter) string {
+	query := utils.NewStringBuilder()
+	query.AppendLine("WHERE 1=1")
+	if filter.Id > 0 {
+		query.AppendFormat("AND id=%d", filter.Id)
+	}
+	if filter.Email != "" {
+		query.AppendFormat("AND email=%s", utils.SqlString(filter.Email))
+	}
+	return query.String()
 }

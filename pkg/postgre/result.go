@@ -1,7 +1,6 @@
 package postgre
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -38,17 +37,41 @@ func (r *Result) Next() bool {
 	return r.currentIndex < r.rowsCount
 }
 
-func (r *Result) GetFieldValue(field string) (interface{}, error) {
+func (r *Result) GetFieldValue(field string) interface{} {
 	if r.currentIndex < 0 || r.currentIndex >= len(r.rows) {
-		return nil, errors.New("current row is out of range")
+		logger.Fatal("current row is out of range")
 	}
 	row := r.rows[r.currentIndex]
 	value, exists := row[field]
 	if !exists {
 		message := fmt.Sprintf("column %s not found", field)
-		return nil, errors.New(message)
+		logger.Fatal(message)
 	}
-	return value, nil
+	return value
+}
+
+func (r *Result) ReadString(field string) string {
+	fieldValue := r.GetFieldValue(field)
+	if fieldValue == nil {
+		return ""
+	}
+	result, ok := fieldValue.(string)
+	if !ok {
+		return ""
+	}
+	return result
+}
+
+func (r *Result) ReadUint(field string) int {
+	fieldValue := r.GetFieldValue(field)
+	if fieldValue == nil {
+		return 0
+	}
+	result, ok := fieldValue.(int32)
+	if !ok {
+		return 0
+	}
+	return int(result)
 }
 
 func getFieldNames(rows pgx.Rows) []string {
