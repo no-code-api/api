@@ -107,7 +107,7 @@ func (r *userRepository) FindUsers(filter *UserFilter) ([]*User, bool) {
 	var users []*User
 	for result.Next() {
 		user := &User{
-			Id:       uint(result.ReadUint("id")),
+			Id:       uint(result.ReadInt("id")),
 			Name:     result.ReadString("name"),
 			Email:    result.ReadString("email"),
 			Password: result.ReadString("password"),
@@ -131,7 +131,7 @@ func (r *userRepository) GetQueryFilter(filter *UserFilter) string {
 	query := utils.NewStringBuilder()
 	query.AppendLine("WHERE 1=1")
 	if filter.Id > 0 {
-		query.AppendFormat("AND id=%d", filter.Id)
+		query.AppendFormat("AND id=%d", filter.Id).AppendNewLine()
 	}
 	if filter.Email != "" {
 		query.AppendFormat("AND email=%s", utils.SqlString(filter.Email))

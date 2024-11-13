@@ -62,7 +62,7 @@ func (r *Result) ReadString(field string) string {
 	return result
 }
 
-func (r *Result) ReadUint(field string) int {
+func (r *Result) ReadInt(field string) int {
 	fieldValue := r.GetFieldValue(field)
 	if fieldValue == nil {
 		return 0
