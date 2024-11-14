@@ -15,18 +15,20 @@ O conceito do projeto é ser um site que possibilite desenvolvedores front-end, 
 O projeto requer um arquivo `.env` com as seguintes variáveis de ambiente. Use o arquivo `.env.template` como referência para criar o seu `.env`.
 
 ```
-SERVER_PORT=
-POSTGRE_HOST=
-POSTGRE_PORT=
-POSTGRE_USER_NAME=
-POSTGRE_PASSWORD=
-POSTGRE_DB_NAME=
-POSTGRE_SSL_MODE=
-JWT_SECRET=
-REDIS_HOST=
-REDIS_PASSWORD=
-REDIS_DB=
+SERVER_PORT=:8080
+POSTGRE_HOST=localhost
+POSTGRE_PORT=PORTA_DOCKER
+POSTGRE_USER_NAME=USERNAME_DOCKER
+POSTGRE_PASSWORD=PASSWORD_DOCKER
+POSTGRE_DB_NAME=SUA_ESCOLHA
+POSTGRE_SSL_MODE=disable
+JWT_SECRET=CHAVE_JWT
+REDIS_HOST=localhost:PORTA_DOCKER
+REDIS_PASSWORD=PASSWORD_DOCKER
+REDIS_DB=0
 ```
+
+Para a chave JWT utilizei o site [JWTSecret.com](https://jwtsecret.com/generate)
 
 Importante: Certifique-se de preencher todos os campos necessários no seu arquivo .env antes de iniciar o projeto.
 
