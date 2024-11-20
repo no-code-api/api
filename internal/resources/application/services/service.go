@@ -19,8 +19,7 @@ type resourceService struct {
 	projectRepository  projects.IProjectRepository
 }
 
-func NewService() IService {
-	connection := postgre.GetConnection()
+func NewService(connection *postgre.Connection) IService {
 	return resourceService{
 		resourceRepository: dataReps.NewRepository(connection),
 		projectRepository:  projects.NewRepository(connection),

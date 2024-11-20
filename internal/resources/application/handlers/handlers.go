@@ -4,6 +4,7 @@ import (
 	"github.com/leandro-d-santos/no-code-api/internal/handler"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/requests"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/services"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type ResourceHandler struct {
@@ -12,9 +13,10 @@ type ResourceHandler struct {
 }
 
 func NewEndpointHandler() ResourceHandler {
+	connection := postgre.GetConnection()
 	return ResourceHandler{
 		DefaultPath:     "/projects/:projectId/resources",
-		resourceService: services.NewService(),
+		resourceService: services.NewService(connection),
 	}
 }
 
