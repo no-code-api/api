@@ -24,8 +24,8 @@ func InitializeRedis() {
 	})
 }
 
-func Get(key string) string {
-	return client.Get(ctx, key).Val()
+func Get(key string) (string, error) {
+	return client.Get(ctx, key).Result()
 }
 
 func Set(key string, value interface{}) error {

@@ -12,19 +12,22 @@ import (
 	dataRep "github.com/leandro-d-santos/no-code-api/internal/resources/data/repositories"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
 	domainRep "github.com/leandro-d-santos/no-code-api/internal/resources/domain/repositories"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/services"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/validations"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type resourceService struct {
-	resourceRepository domainRep.IRepository
-	projectRepository  projectsDomainRep.IRepository
+	resourceRepository   domainRep.IRepository
+	projectRepository    projectsDomainRep.IRepository
+	resourceCacheService services.IResourceCacheService
 }
 
 func NewService(connection *postgre.Connection) IService {
 	return resourceService{
-		resourceRepository: dataRep.NewRepository(connection),
-		projectRepository:  projectsDataRep.NewRepository(connection),
+		resourceRepository:   dataRep.NewRepository(connection),
+		projectRepository:    projectsDataRep.NewRepository(connection),
+		resourceCacheService: services.NewService(),
 	}
 }
 
@@ -39,8 +42,13 @@ func (s resourceService) Create(createResource *requests.CreateResourceRequest) 
 	if err := validations.CreateResourceIsValid(resource); err != nil {
 		return err
 	}
+
 	if ok := s.resourceRepository.CreateResource(resource); !ok {
 		return errors.New("erro ao cadastrar recurso")
+	}
+
+	if err := s.resourceCacheService.SetCache(resource); err != nil {
+		return errors.New("erro ao atualizar cache de recursos")
 	}
 	return nil
 }
@@ -73,6 +81,7 @@ func (s resourceService) Update(updateResource *requests.UpdateResourceRequest) 
 		return err
 	}
 
+	oldPath := resource.Path
 	resource.Path = updateResource.Path
 	resource.Endpoints = s.transformEndpointsRequestToModel(updateResource.Endpoints)
 	if err := validations.UpdateResourceIsValid(resource); err != nil {
@@ -82,18 +91,26 @@ func (s resourceService) Update(updateResource *requests.UpdateResourceRequest) 
 	if ok := s.resourceRepository.UpdateResource(resource); !ok {
 		return errors.New("erro ao atualizar recurso")
 	}
-
+	if oldPath != resource.Path {
+		s.resourceCacheService.DeleteCache(resource.ProjectId, oldPath)
+	}
+	if err := s.resourceCacheService.SetCache(resource); err != nil {
+		return errors.New("erro ao atualizar cache de recursos")
+	}
 	return nil
 }
 
 func (s resourceService) DeleteById(id string) error {
-	if _, err := s.findResourceById(id); err != nil {
+	resource, err := s.findResourceById(id)
+	if err != nil {
 		return err
 	}
 
 	if ok := s.resourceRepository.DeleteById(id); !ok {
 		return errors.New("erro ao remover recurso")
 	}
+
+	s.resourceCacheService.DeleteCache(resource.ProjectId, resource.Path)
 	return nil
 }
 

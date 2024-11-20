@@ -91,5 +91,6 @@ func (s *JwtService) setStampInCache(userId uint, stamp string) error {
 
 func (s *JwtService) getStampFromCache(userId uint) string {
 	key := s.jwtSettings.BuildKey(userId)
-	return cache.Get(key)
+	val, _ := cache.Get(key)
+	return val
 }

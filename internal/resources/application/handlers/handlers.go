@@ -74,7 +74,7 @@ func (handler *ResourceHandler) HandleUpdate(baseHandler *handler.BaseHandler) {
 		baseHandler.BadRequest(err.Error())
 		return
 	}
-	baseHandler.OkData("Recurso atualizado com sucesso.")
+	baseHandler.OkMessage("Recurso atualizado com sucesso.")
 }
 
 func (handler *ResourceHandler) HandleDelete(baseHandler *handler.BaseHandler) {
@@ -90,7 +90,7 @@ func (handler *ResourceHandler) HandleDelete(baseHandler *handler.BaseHandler) {
 		baseHandler.BadRequest(err.Error())
 		return
 	}
-	baseHandler.OkData("Recurso deletado com sucesso.")
+	baseHandler.OkMessage("Recurso deletado com sucesso.")
 }
 
 func GetProjectId(baseHandler *handler.BaseHandler) string {
