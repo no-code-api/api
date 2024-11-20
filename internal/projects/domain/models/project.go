@@ -1,9 +1,4 @@
-package projects
-
-type findFilter struct {
-	Id     string
-	UserId uint
-}
+package models
 
 type Project struct {
 	Id          string

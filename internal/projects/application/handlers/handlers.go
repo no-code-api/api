@@ -1,18 +1,22 @@
-package projects
+package handlers
 
 import (
 	"github.com/leandro-d-santos/no-code-api/internal/handler"
+	"github.com/leandro-d-santos/no-code-api/internal/projects/application/requests"
+	"github.com/leandro-d-santos/no-code-api/internal/projects/application/services"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type ProjectHandler struct {
 	DefaultPath    string
-	projectService ProjectService
+	projectService services.IService
 }
 
 func NewHandler() ProjectHandler {
+	connection := postgre.GetConnection()
 	return ProjectHandler{
 		DefaultPath:    "/projects",
-		projectService: NewService(),
+		projectService: services.NewService(connection),
 	}
 }
 
@@ -21,7 +25,7 @@ func (handler ProjectHandler) HandleCreate(baseHandler *handler.BaseHandler) {
 	if !ok {
 		return
 	}
-	project := &CreateProjectViewModel{}
+	project := &requests.CreateProjectRequest{}
 	if !baseHandler.BindJson(project) {
 		return
 	}
@@ -52,7 +56,7 @@ func (handler ProjectHandler) HandleUpdate(baseHandler *handler.BaseHandler) {
 		baseHandler.BadRequest("Código projeto não informado")
 		return
 	}
-	project := &UpdateProjectViewModel{}
+	project := &requests.UpdateProjectRequest{}
 	if !baseHandler.BindJson(project) {
 		return
 	}
@@ -73,7 +77,7 @@ func (handler ProjectHandler) HandleDeleteByUser(baseHandler *handler.BaseHandle
 		baseHandler.BadRequest("Código projeto não informado")
 		return
 	}
-	if err := handler.projectService.Delete(id); err != nil {
+	if err := handler.projectService.DeleteById(id); err != nil {
 		baseHandler.BadRequest(err.Error())
 		return
 	}

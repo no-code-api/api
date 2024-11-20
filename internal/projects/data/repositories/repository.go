@@ -3,31 +3,26 @@ package projects
 import (
 	"github.com/leandro-d-santos/no-code-api/internal/core"
 	"github.com/leandro-d-santos/no-code-api/internal/logger"
+	dataModels "github.com/leandro-d-santos/no-code-api/internal/projects/data/models"
+	domainModels "github.com/leandro-d-santos/no-code-api/internal/projects/domain/models"
+	"github.com/leandro-d-santos/no-code-api/internal/projects/domain/repositories"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre/utils"
 )
-
-type IProjectRepository interface {
-	Create(project *Project) bool
-	FindByUser(userId uint) ([]*Project, bool)
-	FindById(id string) (*Project, bool)
-	Update(project *Project) bool
-	DeleteById(id string) bool
-}
 
 type projectRepository struct {
 	connection *postgre.Connection
 	logger     *logger.Logger
 }
 
-func NewRepository(connection *postgre.Connection) IProjectRepository {
+func NewRepository(connection *postgre.Connection) repositories.IRepository {
 	return &projectRepository{
 		connection: connection,
 		logger:     logger.NewLogger("ProjectRepository"),
 	}
 }
 
-func (r *projectRepository) Create(project *Project) bool {
+func (r *projectRepository) Create(project *domainModels.Project) bool {
 	project.Id = core.GenerateUniqueId()
 	command := utils.NewStringBuilder()
 	command.AppendLine("INSERT INTO projects")
@@ -45,23 +40,23 @@ func (r *projectRepository) Create(project *Project) bool {
 	return true
 }
 
-func (r *projectRepository) FindByUser(userId uint) ([]*Project, bool) {
-	return r.findProjects(&findFilter{UserId: userId})
+func (r *projectRepository) FindByUser(userId uint) ([]*domainModels.Project, bool) {
+	return r.findProjects(&dataModels.FindFilter{UserId: userId})
 }
 
-func (r *projectRepository) FindById(id string) (*Project, bool) {
-	projects, ok := r.findProjects(&findFilter{Id: id})
+func (r *projectRepository) FindById(id string) (*domainModels.Project, bool) {
+	projects, ok := r.findProjects(&dataModels.FindFilter{Id: id})
 	if !ok {
 		return nil, false
 	}
-	var project *Project = nil
+	var project *domainModels.Project = nil
 	if len(projects) > 0 {
 		project = projects[0]
 	}
 	return project, true
 }
 
-func (r *projectRepository) Update(project *Project) bool {
+func (r *projectRepository) Update(project *domainModels.Project) bool {
 	command := utils.NewStringBuilder()
 	command.AppendLine("UPDATE projects")
 	command.AppendFormat("SET name=%s", utils.SqlString(project.Name)).AppendNewLine()
@@ -86,7 +81,7 @@ func (r *projectRepository) DeleteById(id string) bool {
 	return true
 }
 
-func (r *projectRepository) findProjects(filter *findFilter) ([]*Project, bool) {
+func (r *projectRepository) findProjects(filter *dataModels.FindFilter) ([]*domainModels.Project, bool) {
 	query := utils.NewStringBuilder()
 	query.AppendLine(r.getQuery())
 	query.AppendLine(r.getQueryFilter(filter))
@@ -95,9 +90,9 @@ func (r *projectRepository) findProjects(filter *findFilter) ([]*Project, bool) 
 		return nil, false
 	}
 
-	var projects []*Project
+	var projects []*domainModels.Project
 	for result.Next() {
-		project := &Project{
+		project := &domainModels.Project{
 			Id:          result.ReadString("id"),
 			Name:        result.ReadString("name"),
 			Description: result.ReadString("description"),
@@ -116,7 +111,7 @@ func (r *projectRepository) getQuery() string {
 	return query.String()
 }
 
-func (r *projectRepository) getQueryFilter(filter *findFilter) string {
+func (r *projectRepository) getQueryFilter(filter *dataModels.FindFilter) string {
 	query := utils.NewStringBuilder()
 	query.AppendLine("WHERE 1=1")
 	if filter.Id != "" {

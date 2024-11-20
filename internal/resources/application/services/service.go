@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/leandro-d-santos/no-code-api/internal/projects"
+	projectsDataRep "github.com/leandro-d-santos/no-code-api/internal/projects/data/repositories"
+	projectsModels "github.com/leandro-d-santos/no-code-api/internal/projects/domain/models"
+	projectsDomainRep "github.com/leandro-d-santos/no-code-api/internal/projects/domain/repositories"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/requests"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/responses"
 	dataRep "github.com/leandro-d-santos/no-code-api/internal/resources/data/repositories"
@@ -16,13 +18,13 @@ import (
 
 type resourceService struct {
 	resourceRepository domainRep.IRepository
-	projectRepository  projects.IProjectRepository
+	projectRepository  projectsDomainRep.IRepository
 }
 
 func NewService(connection *postgre.Connection) IService {
 	return resourceService{
 		resourceRepository: dataRep.NewRepository(connection),
-		projectRepository:  projects.NewRepository(connection),
+		projectRepository:  projectsDataRep.NewRepository(connection),
 	}
 }
 
@@ -95,7 +97,7 @@ func (s resourceService) DeleteById(id string) error {
 	return nil
 }
 
-func (s resourceService) findProject(projectId string) (*projects.Project, error) {
+func (s resourceService) findProject(projectId string) (*projectsModels.Project, error) {
 	project, ok := s.projectRepository.FindById(projectId)
 	if !ok {
 		return nil, errors.New("erro ao consultar projeto")
