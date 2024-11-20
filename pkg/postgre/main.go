@@ -22,7 +22,6 @@ func InitializePostgres() {
 	if err != nil {
 		logger.FatalF("Fail to connect on database: %v", err)
 	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := conn.Ping(ctx); err != nil {

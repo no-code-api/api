@@ -1,20 +1,18 @@
 package resources
 
 import (
-	"strconv"
-
 	"github.com/leandro-d-santos/no-code-api/internal/handler"
 )
 
 type ResourceHandler struct {
 	DefaultPath     string
-	endpointService ResourceService
+	resourceService ResourceService
 }
 
 func NewEndpointHandler() ResourceHandler {
 	return ResourceHandler{
 		DefaultPath:     "/projects/:projectId/resources",
-		endpointService: NewService(),
+		resourceService: NewService(),
 	}
 }
 
@@ -28,7 +26,7 @@ func (handler *ResourceHandler) HandleCreate(baseHandler *handler.BaseHandler) {
 		return
 	}
 	resource.ProjectId = projectId
-	if err := handler.endpointService.Create(resource); err != nil {
+	if err := handler.resourceService.Create(resource); err != nil {
 		baseHandler.BadRequest(err.Error())
 		return
 	}
@@ -41,7 +39,7 @@ func (handler *ResourceHandler) HandleFindAll(baseHandler *handler.BaseHandler) 
 		return
 	}
 
-	endPoints, err := handler.endpointService.FindAll(projectId)
+	endPoints, err := handler.resourceService.FindAll(projectId)
 	if err != nil {
 		baseHandler.BadRequest(err.Error())
 		return
@@ -55,25 +53,24 @@ func (handler *ResourceHandler) HandleUpdate(baseHandler *handler.BaseHandler) {
 	if projectId == "" {
 		return
 	}
-	endpointId := GetEndpointId(baseHandler)
-	if endpointId == 0 {
+	resourceId := GetResourceId(baseHandler)
+	if resourceId == "" {
 		return
 	}
-
-	endpoint := &UpdateEndpointRequest{}
-	if !baseHandler.BindJson(endpoint) {
+	resource := &UpdateResourceRequest{}
+	if !baseHandler.BindJson(resource) {
 		return
 	}
-	if endpointId != endpoint.Id {
-		baseHandler.InvalidParam("Código endpoint")
+	if resourceId != resource.Id {
+		baseHandler.InvalidParam("Código recurso")
 		return
 	}
-	endpoint.ProjectId = projectId
-	if err := handler.endpointService.Update(endpoint); err != nil {
+	resource.ProjectId = projectId
+	if err := handler.resourceService.Update(resource); err != nil {
 		baseHandler.BadRequest(err.Error())
 		return
 	}
-	baseHandler.OkData("Endpoint atualizado com sucesso.")
+	baseHandler.OkData("Recurso atualizado com sucesso.")
 }
 
 func (handler *ResourceHandler) HandleDelete(baseHandler *handler.BaseHandler) {
@@ -81,15 +78,15 @@ func (handler *ResourceHandler) HandleDelete(baseHandler *handler.BaseHandler) {
 	if projectId == "" {
 		return
 	}
-	endpointId := GetEndpointId(baseHandler)
-	if endpointId == 0 {
+	resourceId := GetResourceId(baseHandler)
+	if resourceId == "" {
 		return
 	}
-	if err := handler.endpointService.Delete(projectId, endpointId); err != nil {
+	if err := handler.resourceService.DeleteById(resourceId); err != nil {
 		baseHandler.BadRequest(err.Error())
 		return
 	}
-	baseHandler.OkData("Endpoint deletado com sucesso.")
+	baseHandler.OkData("Recurso deletado com sucesso.")
 }
 
 func GetProjectId(baseHandler *handler.BaseHandler) string {
@@ -101,11 +98,11 @@ func GetProjectId(baseHandler *handler.BaseHandler) string {
 	return projectId
 }
 
-func GetEndpointId(baseHandler *handler.BaseHandler) uint {
-	endpointId, _ := strconv.ParseInt(baseHandler.Param("endpointId"), 10, 32)
-	if endpointId == 0 {
-		baseHandler.BadRequest("Código endpoint não informado.")
-		return 0
+func GetResourceId(baseHandler *handler.BaseHandler) string {
+	resourceId := baseHandler.Param("resourceId")
+	if resourceId == "" {
+		baseHandler.BadRequest("Código recurso não informado.")
+		return ""
 	}
-	return uint(endpointId)
+	return resourceId
 }

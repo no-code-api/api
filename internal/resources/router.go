@@ -12,6 +12,6 @@ func RegisterRoutesV1(rg *gin.RouterGroup) {
 	routes.Use(auth.AuthMiddleware())
 	routes.POST("/", handler.Wrapper(endpointHandler.HandleCreate))
 	routes.GET("/", handler.Wrapper(endpointHandler.HandleFindAll))
-	routes.PUT("/:endpointId", handler.Wrapper(endpointHandler.HandleUpdate))
-	routes.DELETE("/:endpointId", handler.Wrapper(endpointHandler.HandleDelete))
+	routes.PUT("/:resourceId", handler.Wrapper(endpointHandler.HandleUpdate))
+	routes.DELETE("/:resourceId", handler.Wrapper(endpointHandler.HandleDelete))
 }

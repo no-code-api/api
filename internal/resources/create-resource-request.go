@@ -18,9 +18,7 @@ func (createResource *CreateResourceRequest) ToModel() *Resource {
 func (createResource *CreateResourceRequest) EndpointsToModel(resource *Resource) []*Endpoint {
 	endpoints := make([]*Endpoint, len(createResource.Endpoints))
 	for i, createEndpoint := range createResource.Endpoints {
-		endpoint := createEndpoint.ToModel()
-		endpoint.Resource = resource
-		endpoints[i] = endpoint
+		endpoints[i] = createEndpoint.ToModel()
 	}
 	return endpoints
 }

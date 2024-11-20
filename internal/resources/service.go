@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/leandro-d-santos/no-code-api/internal/projects"
-	"github.com/leandro-d-santos/no-code-api/pkg/database"
+	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type ResourceService struct {
@@ -14,7 +14,7 @@ type ResourceService struct {
 }
 
 func NewService() ResourceService {
-	connection := database.GetConnection()
+	connection := postgre.GetConnection()
 	return ResourceService{
 		resourceRepository: NewRepository(connection),
 		projectRepository:  projects.NewRepository(connection),
@@ -22,22 +22,19 @@ func NewService() ResourceService {
 }
 
 func (s ResourceService) Create(createResource *CreateResourceRequest) error {
-	project, err := s.findProject(createResource.ProjectId)
-	if err != nil {
+	if _, err := s.findProject(createResource.ProjectId); err != nil {
 		return err
 	}
-
+	if err := s.resourcePathAvailableByProject(createResource.ProjectId, createResource.Path); err != nil {
+		return err
+	}
 	resource := createResource.ToModel()
-	resource.Project = *project
-
-	if err := s.resourcePathAvailable(resource); err != nil {
+	if err := CreateResourceIsValid(resource); err != nil {
 		return err
 	}
-
 	if ok := s.resourceRepository.CreateResource(resource); !ok {
-		return errors.New("erro ao cadastrar endpoint")
+		return errors.New("erro ao cadastrar recurso")
 	}
-
 	return nil
 }
 
@@ -47,7 +44,7 @@ func (s ResourceService) FindAll(projectId string) ([]FindResourceResponse, erro
 	}
 	resources, ok := s.resourceRepository.FindAllResource(projectId)
 	if !ok {
-		return nil, errors.New("Erro ao consultar recursos")
+		return nil, errors.New("erro ao consultar recursos")
 	}
 
 	resourcesReponse := make([]FindResourceResponse, len(resources))
@@ -59,40 +56,38 @@ func (s ResourceService) FindAll(projectId string) ([]FindResourceResponse, erro
 	return resourcesReponse, nil
 }
 
-func (s ResourceService) Update(ev *UpdateEndpointRequest) error {
-	if _, err := s.findProject(ev.ProjectId); err != nil {
-		return err
-	}
-	endpoint, err := s.findEndpoint(ev.ProjectId, ev.Id)
+func (s ResourceService) Update(updateResource *UpdateResourceRequest) error {
+	resource, err := s.findResourceById(updateResource.Id)
 	if err != nil {
 		return err
 	}
 
-	endpoint.Path = ev.Path
-	endpoint.Method = ev.Method
+	if err := s.resourcePathAvailableByResource(updateResource.Id, updateResource.Path); err != nil {
+		return err
+	}
 
-	// if err := s.resourcePathAvailable(endpoint); err != nil {
-	// 	return err
-	// }
+	resource.Path = updateResource.Path
+	endpoints := make([]*Endpoint, 0)
+	endpoints = append(endpoints, resource.Endpoints...)
+	s.populateResourceEndpoints(endpoints, updateResource.Endpoints)
+	if err := UpdateResourceIsValid(resource); err != nil {
+		return err
+	}
 
-	// if ok := s.resourceRepository.UpdateResource(endpoint); !ok {
-	// 	return errors.New("Erro ao atualizar endpoint.")
-	// }
+	if ok := s.resourceRepository.UpdateResource(resource); !ok {
+		return errors.New("erro ao atualizar recurso")
+	}
 
 	return nil
 }
 
-func (s ResourceService) Delete(projectId string, endpointId uint) error {
-	if _, err := s.findProject(projectId); err != nil {
+func (s ResourceService) DeleteById(id string) error {
+	if _, err := s.findResourceById(id); err != nil {
 		return err
 	}
 
-	if _, err := s.findEndpoint(projectId, endpointId); err != nil {
-		return err
-	}
-
-	if ok := s.resourceRepository.DeleteEndpoint(projectId, endpointId); !ok {
-		return errors.New("Erro ao cadastrar endpoint.")
+	if ok := s.resourceRepository.DeleteById(id); !ok {
+		return errors.New("erro ao remover recurso")
 	}
 	return nil
 }
@@ -100,7 +95,7 @@ func (s ResourceService) Delete(projectId string, endpointId uint) error {
 func (s ResourceService) findProject(projectId string) (*projects.Project, error) {
 	project, ok := s.projectRepository.FindById(projectId)
 	if !ok {
-		return nil, errors.New("Erro ao consultar projeto")
+		return nil, errors.New("erro ao consultar projeto")
 	}
 	if project == nil {
 		message := fmt.Sprintf("Projeto '%v' não encontrado.", projectId)
@@ -109,26 +104,62 @@ func (s ResourceService) findProject(projectId string) (*projects.Project, error
 	return project, nil
 }
 
-func (s ResourceService) resourcePathAvailable(resource *Resource) error {
-	available, ok := s.resourceRepository.ResourcePathAvailable(resource.ProjectId, resource.Path)
+func (s ResourceService) resourcePathAvailableByProject(projectId string, path string) error {
+	available, ok := s.resourceRepository.CheckResourcePathAvailableByProject(projectId, path)
 	if !ok {
-		return errors.New("Erro ao consultar disponibilidade de recurso.")
+		return errors.New("erro ao consultar disponibilidade de recurso")
 	}
 	if !available {
-		message := fmt.Sprintf("Recurso '%s' não disponível", resource.Path)
+		message := fmt.Sprintf("Recurso '%s' não disponível", path)
 		return errors.New(message)
 	}
 	return nil
 }
 
-func (s ResourceService) findEndpoint(projectId string, endpointId uint) (*Endpoint, error) {
-	endpoint, ok := s.resourceRepository.FindEndpointById(projectId, endpointId)
+func (s ResourceService) resourcePathAvailableByResource(resourceId string, path string) error {
+	available, ok := s.resourceRepository.CheckResourcePathAvailableByResourceId(resourceId, path)
 	if !ok {
-		return nil, errors.New("Erro ao consultar endpoint.")
+		return errors.New("erro ao consultar disponibilidade de recurso")
 	}
-	if endpoint == nil {
-		message := fmt.Sprintf("Endpoint '%v' não encontrado.", endpointId)
+	if !available {
+		message := fmt.Sprintf("Recurso '%s' não disponível", path)
+		return errors.New(message)
+	}
+	return nil
+}
+
+func (s ResourceService) findResourceById(id string) (*Resource, error) {
+	resource, ok := s.resourceRepository.FindById(id)
+	if !ok {
+		return nil, errors.New("erro ao consultar recurso")
+	}
+	if resource == nil {
+		message := fmt.Sprintf("Recurso '%v' não encontrado.", id)
 		return nil, errors.New(message)
 	}
-	return endpoint, nil
+	return resource, nil
+}
+
+func (s ResourceService) populateResourceEndpoints(endpoints []*Endpoint, requestEndpoints []*UpdateEndpointRequest) {
+	for _, requestEndpoint := range requestEndpoints {
+		if requestEndpoint.Id == 0 {
+			endpoints = append(endpoints, requestEndpoint.ToModel())
+			continue
+		}
+		endpoint := s.findEndpointById(requestEndpoint.Id, endpoints)
+		if endpoint == nil {
+			continue
+		}
+		endpoint.Method = requestEndpoint.Method
+		endpoint.Path = requestEndpoint.Path
+	}
+}
+
+func (s ResourceService) findEndpointById(id uint, endpoints []*Endpoint) *Endpoint {
+	for _, endpoint := range endpoints {
+		if endpoint.Id == id {
+			return endpoint
+		}
+	}
+	return nil
 }

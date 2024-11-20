@@ -1,6 +1,8 @@
 package postgre
 
 import (
+	"fmt"
+
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre/migrations"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre/utils"
 )
@@ -9,7 +11,7 @@ func RunMigrations(conn *Connection) {
 	CreateMigrationsTable(conn)
 	run(conn, migrations.CreateUserTableMigration())
 	run(conn, migrations.CreateProjectTableMigration())
-	run(conn, migrations.CreateEndpointsTableMigration())
+	run(conn, migrations.CreateResourcesTablesMigration())
 }
 
 func CreateMigrationsTable(conn *Connection) {
@@ -29,6 +31,7 @@ func run(conn *Connection, migration migrations.Migration) {
 	if existsMigration(conn, migration.GetId()) {
 		return
 	}
+	fmt.Println("migration running")
 	for _, operation := range migration.Operations() {
 		if err := conn.ExecuteNonQuery(operation); err != nil {
 			logger.Fatal(err.Error())

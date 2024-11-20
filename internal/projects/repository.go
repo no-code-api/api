@@ -97,12 +97,12 @@ func (r *projectRepository) findProjects(filter *findFilter) ([]*Project, bool) 
 
 	var projects []*Project
 	for result.Next() {
-		user := &Project{
+		project := &Project{
 			Id:          result.ReadString("id"),
 			Name:        result.ReadString("name"),
 			Description: result.ReadString("description"),
 		}
-		projects = append(projects, user)
+		projects = append(projects, project)
 	}
 	return projects, true
 }
