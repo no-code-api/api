@@ -40,7 +40,7 @@ func createResourceTableQuery() string {
 func createEndpointTableQuery() string {
 	return utils.NewStringBuilder().
 		AppendLine("CREATE TABLE IF NOT EXISTS endpoints (").
-		AppendLine("id SERIAL PRIMARY KEY,").
+		AppendLine("id VARCHAR(32) PRIMARY KEY,").
 		AppendLine("path VARCHAR(50) NOT NULL,").
 		AppendLine("method VARCHAR(10) NOT NULL,").
 		AppendLine("resourceId VARCHAR(32) NOT NULL,").

@@ -3,7 +3,6 @@ package postgre
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	internalLogger "github.com/leandro-d-santos/no-code-api/internal/logger"
@@ -50,6 +49,5 @@ func (conn *Connection) ExecuteSingleQuery(query string) (interface{}, error) {
 		logger.InfoF("error to exec query. Query: %s - Error: %s", query, err.Error())
 		return nil, errors.New("error to execute")
 	}
-	fmt.Println("Result: ", result)
 	return result, nil
 }

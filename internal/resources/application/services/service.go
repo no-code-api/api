@@ -72,9 +72,7 @@ func (s resourceService) Update(updateResource *requests.UpdateResourceRequest) 
 	}
 
 	resource.Path = updateResource.Path
-	endpoints := make([]*models.Endpoint, 0)
-	endpoints = append(endpoints, resource.Endpoints...)
-	s.populateResourceEndpoints(endpoints, updateResource.Endpoints)
+	resource.Endpoints = s.transformEndpointsRequestToModel(updateResource.Endpoints)
 	if err := validations.UpdateResourceIsValid(resource); err != nil {
 		return err
 	}
@@ -145,22 +143,15 @@ func (s resourceService) findResourceById(id string) (*models.Resource, error) {
 	return resource, nil
 }
 
-func (s resourceService) populateResourceEndpoints(endpoints []*models.Endpoint, requestEndpoints []*requests.UpdateEndpointRequest) {
-	for _, requestEndpoint := range requestEndpoints {
-		if requestEndpoint.Id == 0 {
-			endpoints = append(endpoints, requestEndpoint.ToModel())
-			continue
-		}
-		endpoint := s.findEndpointById(requestEndpoint.Id, endpoints)
-		if endpoint == nil {
-			continue
-		}
-		endpoint.Method = requestEndpoint.Method
-		endpoint.Path = requestEndpoint.Path
+func (s resourceService) transformEndpointsRequestToModel(requestEndpoints []*requests.UpdateEndpointRequest) []*models.Endpoint {
+	endpoints := make([]*models.Endpoint, len(requestEndpoints))
+	for i, requestEndpoint := range requestEndpoints {
+		endpoints[i] = requestEndpoint.ToModel()
 	}
+	return endpoints
 }
 
-func (s resourceService) findEndpointById(id uint, endpoints []*models.Endpoint) *models.Endpoint {
+func (s resourceService) findEndpointById(id string, endpoints []*models.Endpoint) *models.Endpoint {
 	for _, endpoint := range endpoints {
 		if endpoint.Id == id {
 			return endpoint

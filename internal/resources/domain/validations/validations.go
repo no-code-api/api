@@ -63,7 +63,7 @@ func validateMethod(propertyName, method string) error {
 }
 
 func ValidateEndpoints(endpoints []*models.Endpoint) error {
-	allPathsByMethod := make(map[string][]string)
+	allPathsByMethod := make(map[string][]*models.Endpoint)
 	for i, endpoint := range endpoints {
 		methodProperty := fmt.Sprintf("Endpoint.[%d].Método", i)
 		pathProperty := fmt.Sprintf("Endpoint.[%d].Caminho", i)
@@ -75,24 +75,29 @@ func ValidateEndpoints(endpoints []*models.Endpoint) error {
 		}
 		pathsByMethod, ok := allPathsByMethod[endpoint.Method]
 		if !ok {
-			pathsByMethod = make([]string, 0)
+			pathsByMethod = make([]*models.Endpoint, 0)
 			allPathsByMethod[endpoint.Method] = pathsByMethod
 		}
 		if err := validatePathSegment(endpoint, pathsByMethod); err != nil {
 			return err
 		}
-		pathsByMethod = append(pathsByMethod, endpoint.Path)
+		pathsByMethod = append(pathsByMethod, endpoint)
 		allPathsByMethod[endpoint.Method] = pathsByMethod
 	}
 	return nil
 }
 
-func validatePathSegment(endpoint *models.Endpoint, pathsByMethod []string) error {
+func validatePathSegment(endpoint *models.Endpoint, pathsByMethod []*models.Endpoint) error {
 	endpointSegments := strings.Split(endpoint.Path, "/")
 	for _, path := range pathsByMethod {
-		segments := strings.Split(path, "/")
+
+		if path.Path == endpoint.Path && path.Id != endpoint.Id {
+			return fmt.Errorf("endpoint já cadastrado: ('%s' - '%s')", endpoint.Method, endpoint.Path)
+		}
+
+		segments := strings.Split(path.Path, "/")
 		if PathsConflict(endpointSegments, segments) {
-			return fmt.Errorf("conflito detectado entre os endpoints: '%s' e '%s'", endpoint.Path, path)
+			return fmt.Errorf("conflito detectado entre os endpoints: ('%s' - '%s') e ('%s' - '%s')", endpoint.Method, endpoint.Path, path.Method, path.Path)
 		}
 	}
 	return nil

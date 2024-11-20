@@ -3,7 +3,7 @@ package responses
 import "github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
 
 type FindEndpointResponse struct {
-	Id     uint   `json:"id"`
+	Id     string `json:"id"`
 	Path   string `json:"path"`
 	Method string `json:"method"`
 }

@@ -112,15 +112,11 @@ func (r *repository) addResource(resource *models.Resource) bool {
 }
 
 func (r *repository) upsertEndpoints(resource *models.Resource) bool {
+	r.deleteEndpoints(resource.Id)
 	for _, endpoint := range resource.Endpoints {
-		if endpoint.Id != 0 {
-			if ok := r.updateEndpoint(endpoint); !ok {
-				return false
-			}
-		} else {
-			if ok := r.addEndpoint(resource.Id, endpoint); !ok {
-				return false
-			}
+		endpoint.Id = core.GenerateUniqueId()
+		if ok := r.addEndpoint(resource.Id, endpoint); !ok {
+			return false
 		}
 	}
 	return true
@@ -129,8 +125,9 @@ func (r *repository) upsertEndpoints(resource *models.Resource) bool {
 func (r *repository) addEndpoint(resourceId string, endpoint *models.Endpoint) bool {
 	command := utils.NewStringBuilder()
 	command.AppendLine("INSERT INTO endpoints")
-	command.AppendLine("(path, method, resourceId, createdAt, updatedAt)")
-	command.AppendFormat("VALUES (%s", utils.SqlString(endpoint.Path)).AppendNewLine()
+	command.AppendLine("(id, path, method, resourceId, createdAt, updatedAt)")
+	command.AppendFormat("VALUES (%s", utils.SqlString(endpoint.Id)).AppendNewLine()
+	command.AppendFormat(",%s", utils.SqlString(endpoint.Path)).AppendNewLine()
 	command.AppendFormat(",%s", utils.SqlString(endpoint.Method)).AppendNewLine()
 	command.AppendFormat(",%s", utils.SqlString(resourceId)).AppendNewLine()
 	command.AppendLine(",NOW()")
@@ -155,15 +152,26 @@ func (r *repository) updateResource(resource *models.Resource) bool {
 	return true
 }
 
-func (r *repository) updateEndpoint(endpoint *models.Endpoint) bool {
+// func (r *repository) updateEndpoint(endpoint *models.Endpoint) bool {
+// 	command := utils.NewStringBuilder()
+// 	command.AppendLine("UPDATE endpoints")
+// 	command.AppendFormat("SET path=%s", utils.SqlString(endpoint.Path)).AppendNewLine()
+// 	command.AppendFormat(",method=%s", utils.SqlString(endpoint.Method)).AppendNewLine()
+// 	command.AppendLine(",updatedAt=NOW()")
+// 	command.AppendFormat("WHERE id=%d", endpoint.Id).AppendNewLine()
+// 	if err := r.connection.ExecuteNonQuery(command.String()); err != nil {
+// 		r.logger.ErrorF("error to update endpoint: %s", err.Error())
+// 		return false
+// 	}
+// 	return true
+// }
+
+func (r *repository) deleteEndpoints(resourceId string) bool {
 	command := utils.NewStringBuilder()
-	command.AppendLine("UPDATE endpoints")
-	command.AppendFormat("SET path=%s", utils.SqlString(endpoint.Path)).AppendNewLine()
-	command.AppendFormat(",method=%s", utils.SqlString(endpoint.Method)).AppendNewLine()
-	command.AppendLine(",updatedAt=NOW()")
-	command.AppendFormat("WHERE id=%d", endpoint.Id).AppendNewLine()
+	command.AppendLine("DELETE FROM endpoints")
+	command.AppendFormat("WHERE resourceid=%s", utils.SqlString(resourceId)).AppendNewLine()
 	if err := r.connection.ExecuteNonQuery(command.String()); err != nil {
-		r.logger.ErrorF("error to update endpoint: %s", err.Error())
+		r.logger.ErrorF("error to remove endpoint: %s", err.Error())
 		return false
 	}
 	return true
@@ -186,6 +194,7 @@ func (r *repository) findResources(filter *models.FindResourceFilter) ([]*models
 		if !exists {
 			resource = &models.Resource{
 				Id:        resourceId,
+				ProjectId: result.ReadString("projectid"),
 				Path:      result.ReadString("resourcepath"),
 				Endpoints: make([]*models.Endpoint, 0),
 			}
@@ -193,7 +202,7 @@ func (r *repository) findResources(filter *models.FindResourceFilter) ([]*models
 			resources = append(resources, resource)
 		}
 		endpoint := &models.Endpoint{
-			Id:     uint(result.ReadInt("endpointid")),
+			Id:     result.ReadString("endpointid"),
 			Path:   result.ReadString("endpointpath"),
 			Method: result.ReadString("endpointmethod"),
 		}
@@ -205,6 +214,7 @@ func (r *repository) findResources(filter *models.FindResourceFilter) ([]*models
 func (r *repository) getQuery() string {
 	return utils.NewStringBuilder().
 		AppendLine("SELECT r.id resourceid").
+		AppendLine(",r.projectId AS projectid").
 		AppendLine(",r.path AS resourcepath").
 		AppendLine(",e.id endpointid").
 		AppendLine(",e.path AS endpointpath").

@@ -1,7 +1,7 @@
 package models
 
 type Endpoint struct {
-	Id         uint
+	Id         string
 	Path       string
 	Method     string
 	ResourceId string

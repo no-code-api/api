@@ -1,8 +1,6 @@
 package postgre
 
 import (
-	"fmt"
-
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre/migrations"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre/utils"
 )
@@ -31,7 +29,6 @@ func run(conn *Connection, migration migrations.Migration) {
 	if existsMigration(conn, migration.GetId()) {
 		return
 	}
-	fmt.Println("migration running")
 	for _, operation := range migration.Operations() {
 		if err := conn.ExecuteNonQuery(operation); err != nil {
 			logger.Fatal(err.Error())
