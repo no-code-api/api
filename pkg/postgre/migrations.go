@@ -9,7 +9,7 @@ func RunMigrations(conn *Connection) {
 	CreateMigrationsTable(conn)
 	run(conn, migrations.CreateUserTableMigration())
 	run(conn, migrations.CreateProjectTableMigration())
-	run(conn, migrations.CreateEndpointsTableMigration())
+	run(conn, migrations.CreateResourcesTablesMigration())
 }
 
 func CreateMigrationsTable(conn *Connection) {

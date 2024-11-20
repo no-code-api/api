@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"github.com/leandro-d-santos/no-code-api/internal/core"
 	"github.com/leandro-d-santos/no-code-api/internal/logger"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre/utils"
@@ -27,7 +28,7 @@ func NewRepository(connection *postgre.Connection) IProjectRepository {
 }
 
 func (r *projectRepository) Create(project *Project) bool {
-	project.Id = generateUniqueId()
+	project.Id = core.GenerateUniqueId()
 	command := utils.NewStringBuilder()
 	command.AppendLine("INSERT INTO projects")
 	command.AppendLine("(id, userId, name, description, createdAt, updatedAt)")
@@ -96,12 +97,12 @@ func (r *projectRepository) findProjects(filter *findFilter) ([]*Project, bool) 
 
 	var projects []*Project
 	for result.Next() {
-		user := &Project{
+		project := &Project{
 			Id:          result.ReadString("id"),
 			Name:        result.ReadString("name"),
 			Description: result.ReadString("description"),
 		}
-		projects = append(projects, user)
+		projects = append(projects, project)
 	}
 	return projects, true
 }
