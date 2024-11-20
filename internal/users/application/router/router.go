@@ -1,13 +1,14 @@
-package users
+package router
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/leandro-d-santos/no-code-api/internal/auth"
 	"github.com/leandro-d-santos/no-code-api/internal/handler"
+	"github.com/leandro-d-santos/no-code-api/internal/users/application/handlers"
 )
 
 func RegisterUsersRoutesV1(rg *gin.RouterGroup) {
-	userHandler := NewHandler()
+	userHandler := handlers.NewHandler()
 	rg.POST("/login", handler.Wrapper(userHandler.HandleLogin))
 	routes := rg.Group("/users")
 	{

@@ -1,23 +1,29 @@
-package users
+package services
 
 import (
 	"errors"
 
 	"github.com/leandro-d-santos/no-code-api/internal/jwt"
+	"github.com/leandro-d-santos/no-code-api/internal/users/application/requests"
+	"github.com/leandro-d-santos/no-code-api/internal/users/application/responses"
+	dataRep "github.com/leandro-d-santos/no-code-api/internal/users/data/repositories"
+	userCore "github.com/leandro-d-santos/no-code-api/internal/users/domain/core"
+	"github.com/leandro-d-santos/no-code-api/internal/users/domain/models"
+	domainRep "github.com/leandro-d-santos/no-code-api/internal/users/domain/repositories"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
-type UserService struct {
-	userRepository IUserRepository
+type userService struct {
+	userRepository domainRep.IRepository
 }
 
-func NewService() UserService {
-	return UserService{
-		userRepository: NewRepository(postgre.GetConnection()),
+func NewService(connection *postgre.Connection) IService {
+	return userService{
+		userRepository: dataRep.NewRepository(connection),
 	}
 }
 
-func (s UserService) Login(request *loginRequest) (*loginResponse, error) {
+func (s userService) Login(request *requests.LoginRequest) (*responses.LoginResponse, error) {
 	user, ok := s.userRepository.FindByEmail(request.Email)
 	if !ok {
 		return nil, s.getUserSearchError()
@@ -27,7 +33,7 @@ func (s UserService) Login(request *loginRequest) (*loginResponse, error) {
 		return nil, errors.New("email não existe")
 	}
 
-	if !VerifyPassword(request.Password, user.Password) {
+	if !userCore.VerifyPassword(request.Password, user.Password) {
 		return nil, errors.New("senha inválida")
 	}
 
@@ -37,34 +43,34 @@ func (s UserService) Login(request *loginRequest) (*loginResponse, error) {
 		return nil, errors.New("erro ao gerar token")
 	}
 
-	return &loginResponse{Token: token}, nil
+	return &responses.LoginResponse{Token: token}, nil
 }
 
-func (s UserService) FindAll() ([]UserResponse, error) {
+func (s userService) FindAll() ([]responses.UserResponse, error) {
 	users, ok := s.userRepository.FindAll()
 	if !ok {
 		return nil, errors.New("erro ao consultar usuários")
 	}
-	usersReponse := make([]UserResponse, len(users))
+	usersReponse := make([]responses.UserResponse, len(users))
 	for index, user := range users {
-		userResponse := UserResponse{}
+		userResponse := responses.UserResponse{}
 		userResponse.FromModel(user)
 		usersReponse[index] = userResponse
 	}
 	return usersReponse, nil
 }
 
-func (s UserService) FindById(id uint) (*UserResponse, error) {
+func (s userService) FindById(id uint) (*responses.UserResponse, error) {
 	user, err := s.SearchUser(id)
 	if err != nil {
 		return nil, err
 	}
-	userResponse := &UserResponse{}
+	userResponse := &responses.UserResponse{}
 	userResponse.FromModel(user)
 	return userResponse, nil
 }
 
-func (s UserService) Create(request *createUserRequest) error {
+func (s userService) Create(request *requests.CreateUserRequest) error {
 	existingUser, ok := s.userRepository.FindByEmail(request.Email)
 	if !ok {
 		return s.getUserSearchError()
@@ -73,7 +79,7 @@ func (s UserService) Create(request *createUserRequest) error {
 		return errors.New("email já cadastrado")
 	}
 
-	hash, err := HashPassword(request.Password)
+	hash, err := userCore.HashPassword(request.Password)
 	if err != nil {
 		return errors.New("erro ao gerar senha")
 	}
@@ -86,7 +92,7 @@ func (s UserService) Create(request *createUserRequest) error {
 	return nil
 }
 
-func (s UserService) Update(request *updateUserRequest) error {
+func (s userService) Update(request *requests.UpdateUserRequest) error {
 	user, err := s.SearchUser(request.Id)
 	if err != nil {
 		return err
@@ -98,7 +104,7 @@ func (s UserService) Update(request *updateUserRequest) error {
 	return nil
 }
 
-func (s UserService) Delete(id uint) error {
+func (s userService) DeleteById(id uint) error {
 	if _, err := s.SearchUser(id); err != nil {
 		return err
 	}
@@ -111,11 +117,11 @@ func (s UserService) Delete(id uint) error {
 	return nil
 }
 
-func (s UserService) getUserSearchError() error {
+func (s userService) getUserSearchError() error {
 	return errors.New("erro ao consultar usuário")
 }
 
-func (s UserService) SearchUser(id uint) (*User, error) {
+func (s userService) SearchUser(id uint) (*models.User, error) {
 	user, ok := s.userRepository.FindById(id)
 	if !ok {
 		return nil, errors.New("erro ao consultar usuário")

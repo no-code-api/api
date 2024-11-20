@@ -1,33 +1,26 @@
-package users
+package repositories
 
 import (
 	"github.com/leandro-d-santos/no-code-api/internal/logger"
+	"github.com/leandro-d-santos/no-code-api/internal/users/domain/models"
+	"github.com/leandro-d-santos/no-code-api/internal/users/domain/repositories"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre/utils"
 )
-
-type IUserRepository interface {
-	Create(user *User) (ok bool)
-	FindAll() (users []*User, ok bool)
-	FindById(id uint) (user *User, ok bool)
-	FindByEmail(email string) (user *User, ok bool)
-	Update(user *User) (ok bool)
-	Delete(id uint) (ok bool)
-}
 
 type userRepository struct {
 	connection *postgre.Connection
 	logg       *logger.Logger
 }
 
-func NewRepository(connection *postgre.Connection) IUserRepository {
+func NewRepository(connection *postgre.Connection) repositories.IRepository {
 	return &userRepository{
 		connection: connection,
 		logg:       logger.NewLogger("UserRepository"),
 	}
 }
 
-func (r *userRepository) Create(user *User) (ok bool) {
+func (r *userRepository) Create(user *models.User) (ok bool) {
 	command := utils.NewStringBuilder()
 	command.AppendLine("INSERT INTO users")
 	command.AppendLine("(name, email, password, createdAt, updatedAt)")
@@ -43,12 +36,12 @@ func (r *userRepository) Create(user *User) (ok bool) {
 	return true
 }
 
-func (r *userRepository) FindAll() (users []*User, ok bool) {
-	return r.FindUsers(&UserFilter{})
+func (r *userRepository) FindAll() (users []*models.User, ok bool) {
+	return r.FindUsers(&models.UserFilter{})
 }
 
-func (r *userRepository) FindById(id uint) (user *User, ok bool) {
-	users, ok := r.FindUsers(&UserFilter{Id: id})
+func (r *userRepository) FindById(id uint) (user *models.User, ok bool) {
+	users, ok := r.FindUsers(&models.UserFilter{Id: id})
 	if !ok {
 		return nil, false
 	}
@@ -59,19 +52,19 @@ func (r *userRepository) FindById(id uint) (user *User, ok bool) {
 	return user, true
 }
 
-func (r *userRepository) FindByEmail(email string) (*User, bool) {
-	users, ok := r.FindUsers(&UserFilter{Email: email})
+func (r *userRepository) FindByEmail(email string) (*models.User, bool) {
+	users, ok := r.FindUsers(&models.UserFilter{Email: email})
 	if !ok {
 		return nil, false
 	}
-	var user *User = nil
+	var user *models.User = nil
 	if len(users) > 0 {
 		user = users[0]
 	}
 	return user, true
 }
 
-func (r *userRepository) Update(user *User) bool {
+func (r *userRepository) Update(user *models.User) bool {
 	command := utils.NewStringBuilder()
 	command.AppendLine("UPDATE users")
 	command.AppendFormat("SET name=%s", utils.SqlString(user.Name)).AppendNewLine()
@@ -95,7 +88,7 @@ func (r *userRepository) Delete(id uint) (ok bool) {
 	return true
 }
 
-func (r *userRepository) FindUsers(filter *UserFilter) ([]*User, bool) {
+func (r *userRepository) FindUsers(filter *models.UserFilter) ([]*models.User, bool) {
 	query := utils.NewStringBuilder()
 	query.AppendLine(r.GetQuery())
 	query.AppendLine(r.GetQueryFilter(filter))
@@ -104,9 +97,9 @@ func (r *userRepository) FindUsers(filter *UserFilter) ([]*User, bool) {
 		return nil, false
 	}
 
-	var users []*User
+	var users []*models.User
 	for result.Next() {
-		user := &User{
+		user := &models.User{
 			Id:       uint(result.ReadInt("id")),
 			Name:     result.ReadString("name"),
 			Email:    result.ReadString("email"),
@@ -127,7 +120,7 @@ func (r *userRepository) GetQuery() string {
 	return query.String()
 }
 
-func (r *userRepository) GetQueryFilter(filter *UserFilter) string {
+func (r *userRepository) GetQueryFilter(filter *models.UserFilter) string {
 	query := utils.NewStringBuilder()
 	query.AppendLine("WHERE 1=1")
 	if filter.Id > 0 {

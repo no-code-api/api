@@ -1,4 +1,4 @@
-package users
+package core
 
 import (
 	"github.com/leandro-d-santos/no-code-api/internal/logger"

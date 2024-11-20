@@ -7,21 +7,21 @@ import (
 	"github.com/leandro-d-santos/no-code-api/internal/projects"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/requests"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/responses"
-	dataReps "github.com/leandro-d-santos/no-code-api/internal/resources/data/repositories"
+	dataRep "github.com/leandro-d-santos/no-code-api/internal/resources/data/repositories"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
-	domainReps "github.com/leandro-d-santos/no-code-api/internal/resources/domain/repositories"
+	domainRep "github.com/leandro-d-santos/no-code-api/internal/resources/domain/repositories"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/validations"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
 type resourceService struct {
-	resourceRepository domainReps.IRepository
+	resourceRepository domainRep.IRepository
 	projectRepository  projects.IProjectRepository
 }
 
 func NewService(connection *postgre.Connection) IService {
 	return resourceService{
-		resourceRepository: dataReps.NewRepository(connection),
+		resourceRepository: dataRep.NewRepository(connection),
 		projectRepository:  projects.NewRepository(connection),
 	}
 }
