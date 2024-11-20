@@ -152,20 +152,6 @@ func (r *repository) updateResource(resource *models.Resource) bool {
 	return true
 }
 
-// func (r *repository) updateEndpoint(endpoint *models.Endpoint) bool {
-// 	command := utils.NewStringBuilder()
-// 	command.AppendLine("UPDATE endpoints")
-// 	command.AppendFormat("SET path=%s", utils.SqlString(endpoint.Path)).AppendNewLine()
-// 	command.AppendFormat(",method=%s", utils.SqlString(endpoint.Method)).AppendNewLine()
-// 	command.AppendLine(",updatedAt=NOW()")
-// 	command.AppendFormat("WHERE id=%d", endpoint.Id).AppendNewLine()
-// 	if err := r.connection.ExecuteNonQuery(command.String()); err != nil {
-// 		r.logger.ErrorF("error to update endpoint: %s", err.Error())
-// 		return false
-// 	}
-// 	return true
-// }
-
 func (r *repository) deleteEndpoints(resourceId string) bool {
 	command := utils.NewStringBuilder()
 	command.AppendLine("DELETE FROM endpoints")
