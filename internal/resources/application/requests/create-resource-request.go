@@ -1,4 +1,6 @@
-package resources
+package requests
+
+import "github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
 
 type CreateResourceRequest struct {
 	Path      string                   `json:"path"`
@@ -6,8 +8,8 @@ type CreateResourceRequest struct {
 	ProjectId string
 }
 
-func (createResource *CreateResourceRequest) ToModel() *Resource {
-	resource := &Resource{
+func (createResource *CreateResourceRequest) ToModel() *models.Resource {
+	resource := &models.Resource{
 		Path:      createResource.Path,
 		ProjectId: createResource.ProjectId,
 	}
@@ -15,8 +17,8 @@ func (createResource *CreateResourceRequest) ToModel() *Resource {
 	return resource
 }
 
-func (createResource *CreateResourceRequest) EndpointsToModel(resource *Resource) []*Endpoint {
-	endpoints := make([]*Endpoint, len(createResource.Endpoints))
+func (createResource *CreateResourceRequest) EndpointsToModel(resource *models.Resource) []*models.Endpoint {
+	endpoints := make([]*models.Endpoint, len(createResource.Endpoints))
 	for i, createEndpoint := range createResource.Endpoints {
 		endpoints[i] = createEndpoint.ToModel()
 	}

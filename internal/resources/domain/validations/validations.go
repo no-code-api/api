@@ -1,11 +1,14 @@
-package resources
+package validations
 
 import (
 	"fmt"
 	"strings"
+
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/constants"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
 )
 
-func CreateResourceIsValid(resource *Resource) error {
+func CreateResourceIsValid(resource *models.Resource) error {
 	if err := validatePathLength("Caminho", resource.Path); err != nil {
 		return err
 	}
@@ -18,7 +21,7 @@ func CreateResourceIsValid(resource *Resource) error {
 	return nil
 }
 
-func UpdateResourceIsValid(resource *Resource) error {
+func UpdateResourceIsValid(resource *models.Resource) error {
 	if err := validateEmptyString("Código", resource.Id); err != nil {
 		return err
 	}
@@ -50,7 +53,7 @@ func validatePathLength(propertyName, path string) error {
 }
 
 func validateMethod(propertyName, method string) error {
-	var allowedMethods = []string{GET, POST, PUT, DELETE}
+	var allowedMethods = []string{constants.GET, constants.POST, constants.PUT, constants.DELETE}
 	for _, allowedMethod := range allowedMethods {
 		if allowedMethod == method {
 			return nil
@@ -59,7 +62,7 @@ func validateMethod(propertyName, method string) error {
 	return fmt.Errorf("'%s' dever estar entre: GET, POST, PUT, DELETE", propertyName)
 }
 
-func ValidateEndpoints(endpoints []*Endpoint) error {
+func ValidateEndpoints(endpoints []*models.Endpoint) error {
 	allPathsByMethod := make(map[string][]string)
 	for i, endpoint := range endpoints {
 		methodProperty := fmt.Sprintf("Endpoint.[%d].Método", i)
@@ -84,18 +87,18 @@ func ValidateEndpoints(endpoints []*Endpoint) error {
 	return nil
 }
 
-func validatePathSegment(endpoint *Endpoint, pathsByMethod []string) error {
+func validatePathSegment(endpoint *models.Endpoint, pathsByMethod []string) error {
 	endpointSegments := strings.Split(endpoint.Path, "/")
 	for _, path := range pathsByMethod {
 		segments := strings.Split(path, "/")
-		if pathsConflict(endpointSegments, segments) {
+		if PathsConflict(endpointSegments, segments) {
 			return fmt.Errorf("conflito detectado entre os endpoints: '%s' e '%s'", endpoint.Path, path)
 		}
 	}
 	return nil
 }
 
-func pathsConflict(endpointSegments []string, pathSegments []string) bool {
+func PathsConflict(endpointSegments []string, pathSegments []string) bool {
 	for i := 1; i < len(endpointSegments); i++ {
 		originalEndpointSegment := endpointSegments[i]
 		if i > (len(pathSegments) - 1) {

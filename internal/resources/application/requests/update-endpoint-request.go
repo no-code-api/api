@@ -1,4 +1,6 @@
-package resources
+package requests
+
+import "github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
 
 type UpdateEndpointRequest struct {
 	Id     uint   `json:"id"`
@@ -6,8 +8,8 @@ type UpdateEndpointRequest struct {
 	Method string `json:"method"`
 }
 
-func (endpoint *UpdateEndpointRequest) ToModel() *Endpoint {
-	return &Endpoint{
+func (endpoint *UpdateEndpointRequest) ToModel() *models.Endpoint {
+	return &models.Endpoint{
 		Id:     endpoint.Id,
 		Path:   endpoint.Path,
 		Method: endpoint.Method,

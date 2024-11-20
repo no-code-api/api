@@ -1,35 +1,27 @@
-package resources
+package repositories
 
 import (
 	"github.com/leandro-d-santos/no-code-api/internal/core"
 	"github.com/leandro-d-santos/no-code-api/internal/logger"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/repositories"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre/utils"
 )
-
-type IRepository interface {
-	CreateResource(resource *Resource) bool
-	FindById(id string) (*Resource, bool)
-	UpdateResource(resource *Resource) bool
-	CheckResourcePathAvailableByProject(projectId string, path string) (bool, bool)
-	CheckResourcePathAvailableByResourceId(resourceId string, path string) (bool, bool)
-	FindAllResource(projectId string) ([]*Resource, bool)
-	DeleteById(id string) bool
-}
 
 type repository struct {
 	connection *postgre.Connection
 	logger     *logger.Logger
 }
 
-func NewRepository(connection *postgre.Connection) IRepository {
+func NewRepository(connection *postgre.Connection) repositories.IRepository {
 	return &repository{
 		connection: connection,
 		logger:     logger.NewLogger("ResourcesRepository"),
 	}
 }
 
-func (r *repository) CreateResource(resource *Resource) bool {
+func (r *repository) CreateResource(resource *models.Resource) bool {
 	resource.Id = core.GenerateUniqueId()
 	if ok := r.addResource(resource); !ok {
 		return false
@@ -40,7 +32,7 @@ func (r *repository) CreateResource(resource *Resource) bool {
 	return true
 }
 
-func (r *repository) UpdateResource(resource *Resource) bool {
+func (r *repository) UpdateResource(resource *models.Resource) bool {
 	if ok := r.updateResource(resource); !ok {
 		return false
 	}
@@ -50,16 +42,16 @@ func (r *repository) UpdateResource(resource *Resource) bool {
 	return true
 }
 
-func (r *repository) FindAllResource(projectId string) ([]*Resource, bool) {
-	return r.findResources(&findResourceFilter{ProjectId: projectId})
+func (r *repository) FindAllResource(projectId string) ([]*models.Resource, bool) {
+	return r.findResources(&models.FindResourceFilter{ProjectId: projectId})
 }
 
-func (r *repository) FindById(id string) (*Resource, bool) {
-	resources, ok := r.findResources(&findResourceFilter{Id: id})
+func (r *repository) FindById(id string) (*models.Resource, bool) {
+	resources, ok := r.findResources(&models.FindResourceFilter{Id: id})
 	if !ok {
 		return nil, false
 	}
-	var resource *Resource = nil
+	var resource *models.Resource = nil
 	if len(resources) > 0 {
 		resource = resources[0]
 	}
@@ -103,7 +95,7 @@ func (r *repository) DeleteById(id string) bool {
 	return true
 }
 
-func (r *repository) addResource(resource *Resource) bool {
+func (r *repository) addResource(resource *models.Resource) bool {
 	command := utils.NewStringBuilder()
 	command.AppendLine("INSERT INTO resources")
 	command.AppendLine("(id, projectId, path, createdAt, updatedAt)")
@@ -119,7 +111,7 @@ func (r *repository) addResource(resource *Resource) bool {
 	return true
 }
 
-func (r *repository) upsertEndpoints(resource *Resource) bool {
+func (r *repository) upsertEndpoints(resource *models.Resource) bool {
 	for _, endpoint := range resource.Endpoints {
 		if endpoint.Id != 0 {
 			if ok := r.updateEndpoint(endpoint); !ok {
@@ -134,7 +126,7 @@ func (r *repository) upsertEndpoints(resource *Resource) bool {
 	return true
 }
 
-func (r *repository) addEndpoint(resourceId string, endpoint *Endpoint) bool {
+func (r *repository) addEndpoint(resourceId string, endpoint *models.Endpoint) bool {
 	command := utils.NewStringBuilder()
 	command.AppendLine("INSERT INTO endpoints")
 	command.AppendLine("(path, method, resourceId, createdAt, updatedAt)")
@@ -150,7 +142,7 @@ func (r *repository) addEndpoint(resourceId string, endpoint *Endpoint) bool {
 	return true
 }
 
-func (r *repository) updateResource(resource *Resource) bool {
+func (r *repository) updateResource(resource *models.Resource) bool {
 	command := utils.NewStringBuilder()
 	command.AppendLine("UPDATE resources")
 	command.AppendFormat("SET path=%s", utils.SqlString(resource.Path)).AppendNewLine()
@@ -163,7 +155,7 @@ func (r *repository) updateResource(resource *Resource) bool {
 	return true
 }
 
-func (r *repository) updateEndpoint(endpoint *Endpoint) bool {
+func (r *repository) updateEndpoint(endpoint *models.Endpoint) bool {
 	command := utils.NewStringBuilder()
 	command.AppendLine("UPDATE endpoints")
 	command.AppendFormat("SET path=%s", utils.SqlString(endpoint.Path)).AppendNewLine()
@@ -177,7 +169,7 @@ func (r *repository) updateEndpoint(endpoint *Endpoint) bool {
 	return true
 }
 
-func (r *repository) findResources(filter *findResourceFilter) ([]*Resource, bool) {
+func (r *repository) findResources(filter *models.FindResourceFilter) ([]*models.Resource, bool) {
 	query := utils.NewStringBuilder()
 	query.AppendLine(r.getQuery())
 	query.AppendLine(r.getQueryFilter(filter))
@@ -186,21 +178,21 @@ func (r *repository) findResources(filter *findResourceFilter) ([]*Resource, boo
 		return nil, false
 	}
 
-	var resources []*Resource
-	var resourcesMap map[string]*Resource = make(map[string]*Resource)
+	var resources []*models.Resource
+	var resourcesMap map[string]*models.Resource = make(map[string]*models.Resource)
 	for result.Next() {
 		resourceId := result.ReadString("resourceid")
 		resource, exists := resourcesMap[resourceId]
 		if !exists {
-			resource = &Resource{
+			resource = &models.Resource{
 				Id:        resourceId,
 				Path:      result.ReadString("resourcepath"),
-				Endpoints: make([]*Endpoint, 0),
+				Endpoints: make([]*models.Endpoint, 0),
 			}
 			resourcesMap[resourceId] = resource
 			resources = append(resources, resource)
 		}
-		endpoint := &Endpoint{
+		endpoint := &models.Endpoint{
 			Id:     uint(result.ReadInt("endpointid")),
 			Path:   result.ReadString("endpointpath"),
 			Method: result.ReadString("endpointmethod"),
@@ -223,7 +215,7 @@ func (r *repository) getQuery() string {
 		String()
 }
 
-func (r *repository) getQueryFilter(filter *findResourceFilter) string {
+func (r *repository) getQueryFilter(filter *models.FindResourceFilter) string {
 	query := utils.NewStringBuilder()
 	query.AppendLine("WHERE 1=1")
 	if filter.Id != "" {

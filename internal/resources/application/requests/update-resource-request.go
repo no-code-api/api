@@ -1,4 +1,4 @@
-package resources
+package requests
 
 type UpdateResourceRequest struct {
 	Id        string                   `json:"id"`

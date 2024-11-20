@@ -1,18 +1,20 @@
-package resources
+package handlers
 
 import (
 	"github.com/leandro-d-santos/no-code-api/internal/handler"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/application/requests"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/application/services"
 )
 
 type ResourceHandler struct {
 	DefaultPath     string
-	resourceService ResourceService
+	resourceService services.IService
 }
 
 func NewEndpointHandler() ResourceHandler {
 	return ResourceHandler{
 		DefaultPath:     "/projects/:projectId/resources",
-		resourceService: NewService(),
+		resourceService: services.NewService(),
 	}
 }
 
@@ -21,7 +23,7 @@ func (handler *ResourceHandler) HandleCreate(baseHandler *handler.BaseHandler) {
 	if projectId == "" {
 		return
 	}
-	resource := &CreateResourceRequest{}
+	resource := &requests.CreateResourceRequest{}
 	if !baseHandler.BindJson(resource) {
 		return
 	}
@@ -57,7 +59,7 @@ func (handler *ResourceHandler) HandleUpdate(baseHandler *handler.BaseHandler) {
 	if resourceId == "" {
 		return
 	}
-	resource := &UpdateResourceRequest{}
+	resource := &requests.UpdateResourceRequest{}
 	if !baseHandler.BindJson(resource) {
 		return
 	}

@@ -1,4 +1,8 @@
-package resources
+package responses
+
+import (
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
+)
 
 type FindResourceResponse struct {
 	Id        string                 `json:"id"`
@@ -6,7 +10,7 @@ type FindResourceResponse struct {
 	Endpoints []FindEndpointResponse `json:"endpoints"`
 }
 
-func (frr *FindResourceResponse) FromModel(resource *Resource) {
+func (frr *FindResourceResponse) FromModel(resource *models.Resource) {
 	frr.Id = resource.Id
 	frr.Path = resource.Path
 	frr.Endpoints = make([]FindEndpointResponse, len(resource.Endpoints))

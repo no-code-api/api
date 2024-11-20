@@ -1,4 +1,6 @@
-package resources
+package responses
+
+import "github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
 
 type FindEndpointResponse struct {
 	Id     uint   `json:"id"`
@@ -6,7 +8,7 @@ type FindEndpointResponse struct {
 	Method string `json:"method"`
 }
 
-func (ep *FindEndpointResponse) FromModel(endpoint *Endpoint) {
+func (ep *FindEndpointResponse) FromModel(endpoint *models.Endpoint) {
 	ep.Id = endpoint.Id
 	ep.Path = endpoint.Path
 	ep.Method = endpoint.Method

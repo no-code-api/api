@@ -1,27 +1,33 @@
-package resources
+package services
 
 import (
 	"errors"
 	"fmt"
 
 	"github.com/leandro-d-santos/no-code-api/internal/projects"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/application/requests"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/application/responses"
+	dataReps "github.com/leandro-d-santos/no-code-api/internal/resources/data/repositories"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
+	domainReps "github.com/leandro-d-santos/no-code-api/internal/resources/domain/repositories"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/validations"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
 )
 
-type ResourceService struct {
-	resourceRepository IRepository
+type resourceService struct {
+	resourceRepository domainReps.IRepository
 	projectRepository  projects.IProjectRepository
 }
 
-func NewService() ResourceService {
+func NewService() IService {
 	connection := postgre.GetConnection()
-	return ResourceService{
-		resourceRepository: NewRepository(connection),
+	return resourceService{
+		resourceRepository: dataReps.NewRepository(connection),
 		projectRepository:  projects.NewRepository(connection),
 	}
 }
 
-func (s ResourceService) Create(createResource *CreateResourceRequest) error {
+func (s resourceService) Create(createResource *requests.CreateResourceRequest) error {
 	if _, err := s.findProject(createResource.ProjectId); err != nil {
 		return err
 	}
@@ -29,7 +35,7 @@ func (s ResourceService) Create(createResource *CreateResourceRequest) error {
 		return err
 	}
 	resource := createResource.ToModel()
-	if err := CreateResourceIsValid(resource); err != nil {
+	if err := validations.CreateResourceIsValid(resource); err != nil {
 		return err
 	}
 	if ok := s.resourceRepository.CreateResource(resource); !ok {
@@ -38,7 +44,7 @@ func (s ResourceService) Create(createResource *CreateResourceRequest) error {
 	return nil
 }
 
-func (s ResourceService) FindAll(projectId string) ([]FindResourceResponse, error) {
+func (s resourceService) FindAll(projectId string) ([]responses.FindResourceResponse, error) {
 	if _, err := s.findProject(projectId); err != nil {
 		return nil, err
 	}
@@ -47,16 +53,16 @@ func (s ResourceService) FindAll(projectId string) ([]FindResourceResponse, erro
 		return nil, errors.New("erro ao consultar recursos")
 	}
 
-	resourcesReponse := make([]FindResourceResponse, len(resources))
+	resourcesReponse := make([]responses.FindResourceResponse, len(resources))
 	for index, resource := range resources {
-		response := FindResourceResponse{}
+		response := responses.FindResourceResponse{}
 		response.FromModel(resource)
 		resourcesReponse[index] = response
 	}
 	return resourcesReponse, nil
 }
 
-func (s ResourceService) Update(updateResource *UpdateResourceRequest) error {
+func (s resourceService) Update(updateResource *requests.UpdateResourceRequest) error {
 	resource, err := s.findResourceById(updateResource.Id)
 	if err != nil {
 		return err
@@ -67,10 +73,10 @@ func (s ResourceService) Update(updateResource *UpdateResourceRequest) error {
 	}
 
 	resource.Path = updateResource.Path
-	endpoints := make([]*Endpoint, 0)
+	endpoints := make([]*models.Endpoint, 0)
 	endpoints = append(endpoints, resource.Endpoints...)
 	s.populateResourceEndpoints(endpoints, updateResource.Endpoints)
-	if err := UpdateResourceIsValid(resource); err != nil {
+	if err := validations.UpdateResourceIsValid(resource); err != nil {
 		return err
 	}
 
@@ -81,7 +87,7 @@ func (s ResourceService) Update(updateResource *UpdateResourceRequest) error {
 	return nil
 }
 
-func (s ResourceService) DeleteById(id string) error {
+func (s resourceService) DeleteById(id string) error {
 	if _, err := s.findResourceById(id); err != nil {
 		return err
 	}
@@ -92,7 +98,7 @@ func (s ResourceService) DeleteById(id string) error {
 	return nil
 }
 
-func (s ResourceService) findProject(projectId string) (*projects.Project, error) {
+func (s resourceService) findProject(projectId string) (*projects.Project, error) {
 	project, ok := s.projectRepository.FindById(projectId)
 	if !ok {
 		return nil, errors.New("erro ao consultar projeto")
@@ -104,7 +110,7 @@ func (s ResourceService) findProject(projectId string) (*projects.Project, error
 	return project, nil
 }
 
-func (s ResourceService) resourcePathAvailableByProject(projectId string, path string) error {
+func (s resourceService) resourcePathAvailableByProject(projectId string, path string) error {
 	available, ok := s.resourceRepository.CheckResourcePathAvailableByProject(projectId, path)
 	if !ok {
 		return errors.New("erro ao consultar disponibilidade de recurso")
@@ -116,7 +122,7 @@ func (s ResourceService) resourcePathAvailableByProject(projectId string, path s
 	return nil
 }
 
-func (s ResourceService) resourcePathAvailableByResource(resourceId string, path string) error {
+func (s resourceService) resourcePathAvailableByResource(resourceId string, path string) error {
 	available, ok := s.resourceRepository.CheckResourcePathAvailableByResourceId(resourceId, path)
 	if !ok {
 		return errors.New("erro ao consultar disponibilidade de recurso")
@@ -128,7 +134,7 @@ func (s ResourceService) resourcePathAvailableByResource(resourceId string, path
 	return nil
 }
 
-func (s ResourceService) findResourceById(id string) (*Resource, error) {
+func (s resourceService) findResourceById(id string) (*models.Resource, error) {
 	resource, ok := s.resourceRepository.FindById(id)
 	if !ok {
 		return nil, errors.New("erro ao consultar recurso")
@@ -140,7 +146,7 @@ func (s ResourceService) findResourceById(id string) (*Resource, error) {
 	return resource, nil
 }
 
-func (s ResourceService) populateResourceEndpoints(endpoints []*Endpoint, requestEndpoints []*UpdateEndpointRequest) {
+func (s resourceService) populateResourceEndpoints(endpoints []*models.Endpoint, requestEndpoints []*requests.UpdateEndpointRequest) {
 	for _, requestEndpoint := range requestEndpoints {
 		if requestEndpoint.Id == 0 {
 			endpoints = append(endpoints, requestEndpoint.ToModel())
@@ -155,7 +161,7 @@ func (s ResourceService) populateResourceEndpoints(endpoints []*Endpoint, reques
 	}
 }
 
-func (s ResourceService) findEndpointById(id uint, endpoints []*Endpoint) *Endpoint {
+func (s resourceService) findEndpointById(id uint, endpoints []*models.Endpoint) *models.Endpoint {
 	for _, endpoint := range endpoints {
 		if endpoint.Id == id {
 			return endpoint
