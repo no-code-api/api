@@ -30,7 +30,7 @@ func InitializePostgres() {
 
 	connection = newConnection(conn)
 	RunMigrations(connection)
-	logger.Debug("Database initialized")
+	logger.Debug("Postgre initialized")
 }
 
 func GetConnection() *Connection {
