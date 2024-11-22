@@ -1,24 +1,30 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
 	"github.com/leandro-d-santos/no-code-api/internal/projects/application/requests"
 	"github.com/leandro-d-santos/no-code-api/internal/projects/application/responses"
 	dataRep "github.com/leandro-d-santos/no-code-api/internal/projects/data/repositories"
+	"github.com/leandro-d-santos/no-code-api/internal/projects/domain/core"
 	"github.com/leandro-d-santos/no-code-api/internal/projects/domain/models"
 	domainRep "github.com/leandro-d-santos/no-code-api/internal/projects/domain/repositories"
+	"github.com/leandro-d-santos/no-code-api/pkg/mongodb"
 	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type projectService struct {
 	projectRepository domainRep.IRepository
+	mongoClient       *mongo.Database
 }
 
 func NewService(connection *postgre.Connection) IService {
 	return projectService{
 		projectRepository: dataRep.NewRepository(connection),
+		mongoClient:       mongodb.GetConnection(),
 	}
 }
 
@@ -30,6 +36,10 @@ func (s projectService) Create(request *requests.CreateProjectRequest) error {
 	}
 	if ok := s.projectRepository.Create(project); !ok {
 		return errors.New("erro ao cadastrar projeto")
+	}
+	collectionName := core.GetCollectionName(project.Id)
+	if err := s.mongoClient.CreateCollection(context.Background(), collectionName); err != nil {
+		return fmt.Errorf("erro ao criar coleção do projeto")
 	}
 	return nil
 }
@@ -68,6 +78,10 @@ func (s projectService) DeleteById(id string) error {
 	}
 	if ok := s.projectRepository.DeleteById(id); !ok {
 		return errors.New("erro ao remover projeto")
+	}
+	collectionName := core.GetCollectionName(id)
+	if err := s.mongoClient.Collection(collectionName).Drop(context.Background()); err != nil {
+		return fmt.Errorf("erro ao deletar coleção do projeto")
 	}
 	return nil
 }
