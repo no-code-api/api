@@ -12,6 +12,11 @@ type Config struct {
 	RedisHost       string
 	RedisPassword   string
 	RedisDb         string
+	MongoDbUserName string
+	MongoDbPassword string
+	MongoDbHost     string
+	MongoDbPort     string
+	MongoDbDbName   string
 	InternalDomain  string
 }
 

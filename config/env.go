@@ -26,6 +26,11 @@ func LoadEnv() *Config {
 		RedisHost:       os.Getenv("REDIS_HOST"),
 		RedisPassword:   os.Getenv("REDIS_PASSWORD"),
 		RedisDb:         os.Getenv("REDIS_DB"),
+		MongoDbUserName: os.Getenv("MONGO_DB_USER_NAME"),
+		MongoDbPassword: os.Getenv("MONGO_DB_PASSWORD"),
+		MongoDbHost:     os.Getenv("MONGO_DB_HOST"),
+		MongoDbPort:     os.Getenv("MONGO_DB_PORT"),
+		MongoDbDbName:   os.Getenv("MONGO_DB_DB_NAME"),
 		InternalDomain:  os.Getenv("INTERNAL_DOMAIN"),
 	}
 }

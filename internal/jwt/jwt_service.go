@@ -63,7 +63,8 @@ func (s *JwtService) ValidateToken(userToken string) (*Claims, string) {
 
 	token, err := jwt.ParseWithClaims(userToken, &Claims{}, keyFunc)
 	if err != nil {
-		return nil, "Erro ao interpretar reivindicações"
+		s.logger.DebugF("Error to read token claims: %s", err.Error())
+		return nil, "Token expirado"
 	}
 
 	claims, ok := token.Claims.(*Claims)
@@ -91,5 +92,6 @@ func (s *JwtService) setStampInCache(userId uint, stamp string) error {
 
 func (s *JwtService) getStampFromCache(userId uint) string {
 	key := s.jwtSettings.BuildKey(userId)
-	return cache.Get(key)
+	val, _ := cache.Get(key)
+	return val
 }
