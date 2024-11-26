@@ -45,14 +45,21 @@ func (s cacheService) SetCache(resource *models.Resource) error {
 
 func (s cacheService) GetCache(projectId, resourcePath string) (*models.ResourceCache, error) {
 	key := s.MakeKey(projectId, resourcePath)
-	data, err := cache.Get(key)
-	if err != nil {
-		return nil, fmt.Errorf("erro ao consultar cache de recursos")
+	data, _ := cache.Get(key)
+	fmt.Println("Data: ", data)
+	fmt.Println("key: ", key)
+	if data == "" {
+		return &models.ResourceCache{
+			Exists:    false,
+			Path:      "",
+			Endpoints: nil,
+		}, nil
 	}
 	resource := &models.ResourceCache{}
 	if err := json.Unmarshal([]byte(data), resource); err != nil {
 		return nil, fmt.Errorf("erro ao ler json do cache de recursos")
 	}
+	resource.Exists = true
 	return resource, nil
 }
 

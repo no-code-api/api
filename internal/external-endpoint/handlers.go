@@ -9,14 +9,14 @@ import (
 )
 
 type ExternalEndpointHandler struct {
-	InternalDomain          string
-	externalEndpointService ExternalEndpointService
+	InternalDomain string
+	service        IExternalEndpointService
 }
 
 func NewHandler() ExternalEndpointHandler {
 	return ExternalEndpointHandler{
-		InternalDomain:          config.Env.InternalDomain,
-		externalEndpointService: NewService(),
+		InternalDomain: config.Env.InternalDomain,
+		service:        NewService(),
 	}
 }
 
@@ -24,18 +24,20 @@ func NewHandler() ExternalEndpointHandler {
 func (handler ExternalEndpointHandler) Handle(baseHandler *handler.BaseHandler) {
 	host := baseHandler.Host()
 	projectId := handler.GetProjectId(host)
+	fmt.Println("ProjectId: ", projectId)
 	request := request{
 		ProjectId: projectId,
 		Path:      baseHandler.Path(),
 		Method:    baseHandler.Method(),
 	}
+	var data interface{}
 	var err error
 	method := strings.ToUpper(request.Method)
 	switch method {
 	case "GET":
-		err = handler.externalEndpointService.Get(request)
+		data, err = handler.service.Get(request)
 	case "POST":
-		err = handler.externalEndpointService.Post(request)
+		data, err = handler.service.Post(request)
 	default:
 		message := fmt.Sprintf("método '%s' não implementado", method)
 		baseHandler.BadRequest(message)
@@ -45,7 +47,7 @@ func (handler ExternalEndpointHandler) Handle(baseHandler *handler.BaseHandler) 
 		baseHandler.BadRequest(err.Error())
 		return
 	}
-	baseHandler.OkMessage("Tamo ai né")
+	baseHandler.OkData(data)
 }
 
 func (handler ExternalEndpointHandler) GetProjectId(host string) string {
