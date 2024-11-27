@@ -1,6 +1,6 @@
 package responses
 
-import "github.com/leandro-d-santos/no-code-api/internal/users/domain/models"
+import "github.com/no-code-api/api/internal/users/domain/models"
 
 type UserResponse struct {
 	Id    uint   `json:"id"`

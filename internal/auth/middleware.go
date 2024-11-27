@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/leandro-d-santos/no-code-api/internal/handler"
-	"github.com/leandro-d-santos/no-code-api/internal/jwt"
+	"github.com/no-code-api/api/internal/handler"
+	"github.com/no-code-api/api/internal/jwt"
 )
 
 func AuthMiddleware() gin.HandlerFunc {

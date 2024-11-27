@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/leandro-d-santos/no-code-api/config"
+	"github.com/no-code-api/api/config"
 )
 
 func InitializePostgres() {

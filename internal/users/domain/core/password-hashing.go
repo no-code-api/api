@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/leandro-d-santos/no-code-api/internal/logger"
+	"github.com/no-code-api/api/internal/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 

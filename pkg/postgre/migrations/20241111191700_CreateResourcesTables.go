@@ -1,6 +1,6 @@
 package migrations
 
-import "github.com/leandro-d-santos/no-code-api/pkg/postgre/utils"
+import "github.com/no-code-api/api/pkg/postgre/utils"
 
 type createResourcesTables struct {
 }

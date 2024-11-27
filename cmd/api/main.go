@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/leandro-d-santos/no-code-api/config"
-	"github.com/leandro-d-santos/no-code-api/internal/router"
+	"github.com/no-code-api/api/config"
+	"github.com/no-code-api/api/internal/router"
 )
 
 func Initialize() {

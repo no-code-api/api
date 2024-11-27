@@ -3,14 +3,14 @@ package services
 import (
 	"errors"
 
-	"github.com/leandro-d-santos/no-code-api/internal/jwt"
-	"github.com/leandro-d-santos/no-code-api/internal/users/application/requests"
-	"github.com/leandro-d-santos/no-code-api/internal/users/application/responses"
-	dataRep "github.com/leandro-d-santos/no-code-api/internal/users/data/repositories"
-	userCore "github.com/leandro-d-santos/no-code-api/internal/users/domain/core"
-	"github.com/leandro-d-santos/no-code-api/internal/users/domain/models"
-	domainRep "github.com/leandro-d-santos/no-code-api/internal/users/domain/repositories"
-	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
+	"github.com/no-code-api/api/internal/jwt"
+	"github.com/no-code-api/api/internal/users/application/requests"
+	"github.com/no-code-api/api/internal/users/application/responses"
+	dataRep "github.com/no-code-api/api/internal/users/data/repositories"
+	userCore "github.com/no-code-api/api/internal/users/domain/core"
+	"github.com/no-code-api/api/internal/users/domain/models"
+	domainRep "github.com/no-code-api/api/internal/users/domain/repositories"
+	"github.com/no-code-api/api/pkg/postgre"
 )
 
 type userService struct {

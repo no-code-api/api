@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/validations"
+	"github.com/no-code-api/api/internal/resources/domain/validations"
 )
 
 func TestPathsConflict(t *testing.T) {

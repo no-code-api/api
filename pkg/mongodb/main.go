@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/leandro-d-santos/no-code-api/config"
-	internalLogger "github.com/leandro-d-santos/no-code-api/internal/logger"
+	"github.com/no-code-api/api/config"
+	internalLogger "github.com/no-code-api/api/internal/logger"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
