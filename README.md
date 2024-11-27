@@ -122,14 +122,14 @@ Abaixo estão as dependências do projeto, com uma breve descrição de cada uma
 
 | Lib | Versão | Descrição |
 | :--- | :---: | :---|
-| [GIN](github.com/gin-gonic/gin) | v1.10.0 | Framework web em Go, usado para criar rotas e gerenciar requisições HTTP |
-| [JWT](github.com/golang-jwt/jwt) | v5.2.1 | Biblioteca para geração e validação de tokens JWT, essencial para autenticação |
-| [gotoenv](github.com/joho/godotenv) | v1.5.1 | Utilizada para carregar variáveis de ambiente a partir de arquivos .env |
-| [crypto](golang.org/x/crypto) | v0.26.0 | Pacote com implementações de criptografia e hashing para maior segurança |
-| [uuid](github.com/google/uuid) | v1.6.0 | Pacote com implementação de geração de IDs unicos padrão uuid |
-| [POSTGRE](github.com/jackc/pgx) | v5.7.1 | Driver PostgreSQL, usado para comunicação com o banco PostgreSQL|
+| [GIN](https://github.com/gin-gonic/gin) | v1.10.0 | Framework web em Go, usado para criar rotas e gerenciar requisições HTTP |
+| [JWT](https://github.com/golang-jwt/jwt) | v5.2.1 | Biblioteca para geração e validação de tokens JWT, essencial para autenticação |
+| [gotoenv](https://github.com/joho/godotenv) | v1.5.1 | Utilizada para carregar variáveis de ambiente a partir de arquivos .env |
+| [crypto](https://golang.org/x/crypto) | v0.26.0 | Pacote com implementações de criptografia e hashing para maior segurança |
+| [uuid](https://github.com/google/uuid) | v1.6.0 | Pacote com implementação de geração de IDs unicos padrão uuid |
+| [POSTGRE](https://github.com/jackc/pgx) | v5.7.1 | Driver PostgreSQL, usado para comunicação com o banco PostgreSQL|
 | [Redis](https://github.com/redis/go-redis) | v9.6.2 | Client Regis, usado para comunicação com o banco Redis|
-| [MONGODB](go.mongodb.org/mongo-driver/mongo) | v1.17.1 | Driver MongoDB, usado para comunicação com o banco MongoDb|
+| [MONGODB](https://go.mongodb.org/mongo-driver/mongo) | v1.17.1 | Driver MongoDB, usado para comunicação com o banco MongoDb|
 
 ### Makefile
 Para utilizar ele é preciso instalar o pacote [make](https://community.chocolatey.org/packages/make) através do [chocolatey](https://chocolatey.org/install).
