@@ -4,17 +4,17 @@ import (
 	"errors"
 	"fmt"
 
-	projectsDataRep "github.com/leandro-d-santos/no-code-api/internal/projects/data/repositories"
-	projectsModels "github.com/leandro-d-santos/no-code-api/internal/projects/domain/models"
-	projectsDomainRep "github.com/leandro-d-santos/no-code-api/internal/projects/domain/repositories"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/application/requests"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/application/responses"
-	dataRep "github.com/leandro-d-santos/no-code-api/internal/resources/data/repositories"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
-	domainRep "github.com/leandro-d-santos/no-code-api/internal/resources/domain/repositories"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/services"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/validations"
-	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
+	projectsDataRep "github.com/no-code-api/no-code-api/internal/projects/data/repositories"
+	projectsModels "github.com/no-code-api/no-code-api/internal/projects/domain/models"
+	projectsDomainRep "github.com/no-code-api/no-code-api/internal/projects/domain/repositories"
+	"github.com/no-code-api/no-code-api/internal/resources/application/requests"
+	"github.com/no-code-api/no-code-api/internal/resources/application/responses"
+	dataRep "github.com/no-code-api/no-code-api/internal/resources/data/repositories"
+	"github.com/no-code-api/no-code-api/internal/resources/domain/models"
+	domainRep "github.com/no-code-api/no-code-api/internal/resources/domain/repositories"
+	"github.com/no-code-api/no-code-api/internal/resources/domain/services"
+	"github.com/no-code-api/no-code-api/internal/resources/domain/validations"
+	"github.com/no-code-api/no-code-api/pkg/postgre"
 )
 
 type resourceService struct {

@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/core"
-	"github.com/leandro-d-santos/no-code-api/pkg/mongodb"
+	"github.com/no-code-api/no-code-api/internal/resources/domain/core"
+	"github.com/no-code-api/no-code-api/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )

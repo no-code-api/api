@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/leandro-d-santos/no-code-api/internal/projects/application/requests"
-	"github.com/leandro-d-santos/no-code-api/internal/projects/application/responses"
-	dataRep "github.com/leandro-d-santos/no-code-api/internal/projects/data/repositories"
-	"github.com/leandro-d-santos/no-code-api/internal/projects/domain/models"
-	domainRep "github.com/leandro-d-santos/no-code-api/internal/projects/domain/repositories"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/services"
-	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
+	"github.com/no-code-api/no-code-api/internal/projects/application/requests"
+	"github.com/no-code-api/no-code-api/internal/projects/application/responses"
+	dataRep "github.com/no-code-api/no-code-api/internal/projects/data/repositories"
+	"github.com/no-code-api/no-code-api/internal/projects/domain/models"
+	domainRep "github.com/no-code-api/no-code-api/internal/projects/domain/repositories"
+	"github.com/no-code-api/no-code-api/internal/resources/domain/services"
+	"github.com/no-code-api/no-code-api/pkg/postgre"
 )
 
 type projectService struct {

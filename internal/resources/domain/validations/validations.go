@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/constants"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
+	"github.com/no-code-api/no-code-api/internal/resources/domain/constants"
+	"github.com/no-code-api/no-code-api/internal/resources/domain/models"
 )
 
 func CreateResourceIsValid(resource *models.Resource) error {

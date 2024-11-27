@@ -1,12 +1,12 @@
 package repositories
 
 import (
-	"github.com/leandro-d-santos/no-code-api/internal/core"
-	"github.com/leandro-d-santos/no-code-api/internal/logger"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/repositories"
-	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
-	"github.com/leandro-d-santos/no-code-api/pkg/postgre/utils"
+	"github.com/no-code-api/no-code-api/internal/core"
+	"github.com/no-code-api/no-code-api/internal/logger"
+	"github.com/no-code-api/no-code-api/internal/resources/domain/models"
+	"github.com/no-code-api/no-code-api/internal/resources/domain/repositories"
+	"github.com/no-code-api/no-code-api/pkg/postgre"
+	"github.com/no-code-api/no-code-api/pkg/postgre/utils"
 )
 
 type repository struct {

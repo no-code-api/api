@@ -5,9 +5,9 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/leandro-d-santos/no-code-api/internal/logger"
-	"github.com/leandro-d-santos/no-code-api/pkg/cache"
-	internalJWT "github.com/leandro-d-santos/no-code-api/pkg/jwt"
+	"github.com/no-code-api/no-code-api/internal/logger"
+	"github.com/no-code-api/no-code-api/pkg/cache"
+	internalJWT "github.com/no-code-api/no-code-api/pkg/jwt"
 )
 
 type JwtService struct {

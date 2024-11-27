@@ -1,6 +1,6 @@
 package requests
 
-import "github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
+import "github.com/no-code-api/no-code-api/internal/resources/domain/models"
 
 type CreateEndpointRequest struct {
 	Path   string `json:"path"`

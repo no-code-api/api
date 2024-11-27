@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
-	internalLogger "github.com/leandro-d-santos/no-code-api/internal/logger"
+	internalLogger "github.com/no-code-api/no-code-api/internal/logger"
 )
 
 var (
