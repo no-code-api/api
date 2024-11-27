@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/no-code-api/no-code-api/config"
-	internalLogger "github.com/no-code-api/no-code-api/internal/logger"
+	"github.com/no-code-api/api/config"
+	internalLogger "github.com/no-code-api/api/internal/logger"
 	"github.com/redis/go-redis/v9"
 )
 

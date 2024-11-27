@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/no-code-api/no-code-api/internal/logger"
-	"github.com/no-code-api/no-code-api/internal/resources/domain/models"
-	"github.com/no-code-api/no-code-api/pkg/cache"
+	"github.com/no-code-api/api/internal/logger"
+	"github.com/no-code-api/api/internal/resources/domain/models"
+	"github.com/no-code-api/api/pkg/cache"
 )
 
 type cacheService struct {

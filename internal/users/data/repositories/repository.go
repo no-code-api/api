@@ -1,11 +1,11 @@
 package repositories
 
 import (
-	"github.com/no-code-api/no-code-api/internal/logger"
-	"github.com/no-code-api/no-code-api/internal/users/domain/models"
-	"github.com/no-code-api/no-code-api/internal/users/domain/repositories"
-	"github.com/no-code-api/no-code-api/pkg/postgre"
-	"github.com/no-code-api/no-code-api/pkg/postgre/utils"
+	"github.com/no-code-api/api/internal/logger"
+	"github.com/no-code-api/api/internal/users/domain/models"
+	"github.com/no-code-api/api/internal/users/domain/repositories"
+	"github.com/no-code-api/api/pkg/postgre"
+	"github.com/no-code-api/api/pkg/postgre/utils"
 )
 
 type userRepository struct {

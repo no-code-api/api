@@ -3,10 +3,10 @@ package handlers
 import (
 	"strconv"
 
-	"github.com/no-code-api/no-code-api/internal/handler"
-	"github.com/no-code-api/no-code-api/internal/users/application/requests"
-	"github.com/no-code-api/no-code-api/internal/users/application/services"
-	"github.com/no-code-api/no-code-api/pkg/postgre"
+	"github.com/no-code-api/api/internal/handler"
+	"github.com/no-code-api/api/internal/users/application/requests"
+	"github.com/no-code-api/api/internal/users/application/services"
+	"github.com/no-code-api/api/pkg/postgre"
 )
 
 type UserHandler struct {

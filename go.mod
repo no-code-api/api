@@ -1,4 +1,4 @@
-module github.com/no-code-api/no-code-api
+module github.com/no-code-api/api
 
 go 1.23.0
 

@@ -1,6 +1,6 @@
 package responses
 
-import "github.com/no-code-api/no-code-api/internal/resources/domain/models"
+import "github.com/no-code-api/api/internal/resources/domain/models"
 
 type FindEndpointResponse struct {
 	Id     string `json:"id"`

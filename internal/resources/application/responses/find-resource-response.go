@@ -1,7 +1,7 @@
 package responses
 
 import (
-	"github.com/no-code-api/no-code-api/internal/resources/domain/models"
+	"github.com/no-code-api/api/internal/resources/domain/models"
 )
 
 type FindResourceResponse struct {

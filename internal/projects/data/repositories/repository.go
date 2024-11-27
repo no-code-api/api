@@ -1,13 +1,13 @@
 package projects
 
 import (
-	"github.com/no-code-api/no-code-api/internal/core"
-	"github.com/no-code-api/no-code-api/internal/logger"
-	dataModels "github.com/no-code-api/no-code-api/internal/projects/data/models"
-	domainModels "github.com/no-code-api/no-code-api/internal/projects/domain/models"
-	"github.com/no-code-api/no-code-api/internal/projects/domain/repositories"
-	"github.com/no-code-api/no-code-api/pkg/postgre"
-	"github.com/no-code-api/no-code-api/pkg/postgre/utils"
+	"github.com/no-code-api/api/internal/core"
+	"github.com/no-code-api/api/internal/logger"
+	dataModels "github.com/no-code-api/api/internal/projects/data/models"
+	domainModels "github.com/no-code-api/api/internal/projects/domain/models"
+	"github.com/no-code-api/api/internal/projects/domain/repositories"
+	"github.com/no-code-api/api/pkg/postgre"
+	"github.com/no-code-api/api/pkg/postgre/utils"
 )
 
 type projectRepository struct {

@@ -1,6 +1,6 @@
 package requests
 
-import "github.com/no-code-api/no-code-api/internal/users/domain/models"
+import "github.com/no-code-api/api/internal/users/domain/models"
 
 type CreateUserRequest struct {
 	Name     string `json:"name"`

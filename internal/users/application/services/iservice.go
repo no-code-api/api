@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/no-code-api/no-code-api/internal/users/application/requests"
-	"github.com/no-code-api/no-code-api/internal/users/application/responses"
+	"github.com/no-code-api/api/internal/users/application/requests"
+	"github.com/no-code-api/api/internal/users/application/responses"
 )
 
 type IService interface {

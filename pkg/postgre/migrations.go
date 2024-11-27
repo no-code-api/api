@@ -1,8 +1,8 @@
 package postgre
 
 import (
-	"github.com/no-code-api/no-code-api/pkg/postgre/migrations"
-	"github.com/no-code-api/no-code-api/pkg/postgre/utils"
+	"github.com/no-code-api/api/pkg/postgre/migrations"
+	"github.com/no-code-api/api/pkg/postgre/utils"
 )
 
 func RunMigrations(conn *Connection) {

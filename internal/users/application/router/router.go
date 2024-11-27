@@ -2,9 +2,9 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/no-code-api/no-code-api/internal/auth"
-	"github.com/no-code-api/no-code-api/internal/handler"
-	"github.com/no-code-api/no-code-api/internal/users/application/handlers"
+	"github.com/no-code-api/api/internal/auth"
+	"github.com/no-code-api/api/internal/handler"
+	"github.com/no-code-api/api/internal/users/application/handlers"
 )
 
 func RegisterUsersRoutesV1(rg *gin.RouterGroup) {
