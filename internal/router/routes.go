@@ -1,11 +1,10 @@
 package router
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	external_endpoint "github.com/leandro-d-santos/no-code-api/internal/external-endpoint"
+	"github.com/leandro-d-santos/no-code-api/internal/external-endpoint/application/handlers"
 	"github.com/leandro-d-santos/no-code-api/internal/handler"
 	projectsRouter "github.com/leandro-d-santos/no-code-api/internal/projects/application/router"
 	resourceRouter "github.com/leandro-d-santos/no-code-api/internal/resources/application/router"
@@ -16,10 +15,8 @@ func RegisterRoutes(mainServer *gin.Engine) {
 	internalServer := gin.New()
 	mainGroup := internalServer.Group("/api")
 	registerRoutesV1(mainGroup)
-	externalEndpointHandler := external_endpoint.NewHandler()
+	externalEndpointHandler := handlers.NewHandler()
 	mainServer.Any("/*domain", func(ctx *gin.Context) {
-		fmt.Printf("Host: %s \n", ctx.Request.Host)
-		fmt.Printf("Param: %s \n", ctx.Param("domain"))
 		host := ctx.Request.Host
 		if !strings.Contains(host, externalEndpointHandler.InternalDomain) {
 			internalServer.HandleContext(ctx)

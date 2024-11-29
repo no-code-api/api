@@ -10,6 +10,7 @@ import (
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/requests"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/responses"
 	dataRep "github.com/leandro-d-santos/no-code-api/internal/resources/data/repositories"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/core"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
 	domainRep "github.com/leandro-d-santos/no-code-api/internal/resources/domain/repositories"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/services"
@@ -39,6 +40,7 @@ func (s resourceService) Create(createResource *requests.CreateResourceRequest) 
 		return err
 	}
 	resource := createResource.ToModel()
+	s.sanitizePaths(resource)
 	if err := validations.CreateResourceIsValid(resource); err != nil {
 		return err
 	}
@@ -84,6 +86,7 @@ func (s resourceService) Update(updateResource *requests.UpdateResourceRequest) 
 	oldPath := resource.Path
 	resource.Path = updateResource.Path
 	resource.Endpoints = s.transformEndpointsRequestToModel(updateResource.Endpoints)
+	s.sanitizePaths(resource)
 	if err := validations.UpdateResourceIsValid(resource); err != nil {
 		return err
 	}
@@ -177,4 +180,11 @@ func (s resourceService) findEndpointById(id string, endpoints []*models.Endpoin
 		}
 	}
 	return nil
+}
+
+func (s resourceService) sanitizePaths(resource *models.Resource) {
+	resource.Path = core.SanitizeSuffixPath(resource.Path)
+	for _, endpoint := range resource.Endpoints {
+		endpoint.Path = core.SanitizeSuffixPath(endpoint.Path)
+	}
 }

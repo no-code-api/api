@@ -1,22 +1,24 @@
-package external_endpoint
+package handlers
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/leandro-d-santos/no-code-api/config"
+	"github.com/leandro-d-santos/no-code-api/internal/external-endpoint/application/requests"
+	"github.com/leandro-d-santos/no-code-api/internal/external-endpoint/application/services"
 	"github.com/leandro-d-santos/no-code-api/internal/handler"
 )
 
 type ExternalEndpointHandler struct {
 	InternalDomain string
-	service        IExternalEndpointService
+	service        services.IExternalEndpointService
 }
 
 func NewHandler() ExternalEndpointHandler {
 	return ExternalEndpointHandler{
 		InternalDomain: config.Env.InternalDomain,
-		service:        NewService(),
+		service:        services.NewService(),
 	}
 }
 
@@ -24,25 +26,12 @@ func NewHandler() ExternalEndpointHandler {
 func (handler ExternalEndpointHandler) Handle(baseHandler *handler.BaseHandler) {
 	host := baseHandler.Host()
 	projectId := handler.GetProjectId(host)
-	fmt.Println("ProjectId: ", projectId)
-	request := request{
+	request := &requests.Request{
 		ProjectId: projectId,
 		Path:      baseHandler.Path(),
 		Method:    baseHandler.Method(),
 	}
-	var data interface{}
-	var err error
-	method := strings.ToUpper(request.Method)
-	switch method {
-	case "GET":
-		data, err = handler.service.Get(request)
-	case "POST":
-		data, err = handler.service.Post(request)
-	default:
-		message := fmt.Sprintf("método '%s' não implementado", method)
-		baseHandler.BadRequest(message)
-		return
-	}
+	data, err := handler.service.Handle(request)
 	if err != nil {
 		baseHandler.BadRequest(err.Error())
 		return

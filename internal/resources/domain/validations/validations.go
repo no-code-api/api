@@ -2,6 +2,7 @@ package validations
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/constants"
@@ -10,6 +11,9 @@ import (
 
 func CreateResourceIsValid(resource *models.Resource) error {
 	if err := validatePathLength("Caminho", resource.Path); err != nil {
+		return err
+	}
+	if err := validatePathStruct("Caminho", resource.Path); err != nil {
 		return err
 	}
 	if err := validateEmptyString("Código projeto", resource.ProjectId); err != nil {
@@ -26,6 +30,9 @@ func UpdateResourceIsValid(resource *models.Resource) error {
 		return err
 	}
 	if err := validatePathLength("Caminho", resource.Path); err != nil {
+		return err
+	}
+	if err := validatePathStruct("Caminho", resource.Path); err != nil {
 		return err
 	}
 	if err := validateEmptyString("Código projeto", resource.ProjectId); err != nil {
@@ -52,6 +59,27 @@ func validatePathLength(propertyName, path string) error {
 	return nil
 }
 
+func validatePathStruct(propertyName, path string) error {
+	if !strings.HasPrefix(path, "/") {
+		return fmt.Errorf("'%s' dever começar com '/'", propertyName)
+	}
+
+	if path == "/" {
+		return nil
+	}
+
+	segments := strings.Split(path, "/")
+	pattern := regexp.MustCompile(`[a-zA-Z]`)
+	for i := 1; i < len(segments); i++ {
+		segment := segments[i]
+		if ok := pattern.MatchString(segment); !ok {
+			return fmt.Errorf("'%s' formato incorreto. Teste /path, /:id", propertyName)
+		}
+	}
+
+	return nil
+}
+
 func validateMethod(propertyName, method string) error {
 	var allowedMethods = []string{constants.GET, constants.POST, constants.PUT, constants.DELETE}
 	for _, allowedMethod := range allowedMethods {
@@ -71,6 +99,9 @@ func ValidateEndpoints(endpoints []*models.Endpoint) error {
 			return err
 		}
 		if err := validatePathLength(pathProperty, endpoint.Path); err != nil {
+			return err
+		}
+		if err := validatePathStruct(pathProperty, endpoint.Path); err != nil {
 			return err
 		}
 		pathsByMethod, ok := allPathsByMethod[endpoint.Method]
