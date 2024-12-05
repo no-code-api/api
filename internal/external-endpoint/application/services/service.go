@@ -45,11 +45,47 @@ func (s externalEndpointService) get(request *requests.Request) (interface{}, er
 		return nil, err
 	}
 
-	return resourceCache, err
+	endpoints := s.getEndpointsByMethod(resourceCache.Endpoints, request.Method)
+	fields := make([]models.ResourceDynamicFieldFilter, 0)
+	requestPathSegments := strings.Split(request.Path, "/")
+	for _, endpoint := range endpoints {
+		endpointPath := core.SanitizeSuffixPath(resourceCache.Path + endpoint.Path)
+		endpointPathSegments := strings.Split(endpointPath, "/")
+		if len(endpointPathSegments) != len(requestPathSegments) {
+			continue
+		}
+		for index, requestPathSegment := range requestPathSegments {
+			endpointPathSegment := endpointPathSegments[index]
+			hasId := strings.HasPrefix(endpointPathSegment, ":")
+			if hasId {
+				key := strings.TrimPrefix(endpointPathSegment, ":")
+				val := requestPathSegment
+				fields = append(fields, models.ResourceDynamicFieldFilter{Key: key, Value: val})
+			} else if endpointPathSegment != requestPathSegment {
+				break
+			}
+		}
+	}
+	filter := &models.ResourceDynamicFilter{
+		ProjectId:    request.ProjectId,
+		ResourcePath: resourceCache.Path,
+		Fields:       fields,
+	}
+	return s.resourceDynamicDataService.Find(filter)
 }
 
 func (s externalEndpointService) post(request *requests.Request) (interface{}, error) {
 	return nil, nil
+}
+
+func (s externalEndpointService) getEndpointsByMethod(cachedEndpoints []*models.EndpointCache, method string) []*models.EndpointCache {
+	var endpoints []*models.EndpointCache
+	for _, endpoint := range cachedEndpoints {
+		if endpoint.Method == method {
+			endpoints = append(endpoints, endpoint)
+		}
+	}
+	return endpoints
 }
 
 func (s externalEndpointService) findCachedResource(projectId, path string) (*models.ResourceCache, error) {
@@ -68,7 +104,7 @@ func (s externalEndpointService) findCachedResource(projectId, path string) (*mo
 			return cache, nil
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("endpoint não encontrado")
 }
 
 func (s externalEndpointService) sanitizePaths(request *requests.Request) {
