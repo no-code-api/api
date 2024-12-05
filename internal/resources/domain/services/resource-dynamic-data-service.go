@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strconv"
 
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/core"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
@@ -14,6 +16,8 @@ import (
 type ResourceDynamicDataService struct {
 	mongoClient *mongo.Database
 }
+
+var containsNumber = regexp.MustCompile(`\d`)
 
 func NewResourceDynamicDataService() IResourceDynamicDataService {
 	return ResourceDynamicDataService{
@@ -27,7 +31,7 @@ func (s ResourceDynamicDataService) CreateCollection(projectId string) error {
 		return err
 	}
 
-	keys := bson.D{{"resourcePath", 1}}
+	keys := bson.D{{Key: "resourcePath", Value: 1}}
 	model := mongo.IndexModel{Keys: keys}
 	if _, err := s.mongoClient.Collection(collectionName).Indexes().CreateOne(context.Background(), model); err != nil {
 		return err
@@ -38,17 +42,22 @@ func (s ResourceDynamicDataService) CreateCollection(projectId string) error {
 
 func (s ResourceDynamicDataService) Find(filter *models.ResourceDynamicFilter) ([]interface{}, error) {
 	collectionName := core.GetCollectionName(filter.ProjectId)
-	mongFilter := s.buildFilter(filter)
-	cur, err := s.mongoClient.Collection(collectionName).Find(context.Background(), mongFilter)
+	mongoFilter, err := s.buildFilter(filter)
+	if err != nil {
+		return nil, err
+	}
+	cur, err := s.mongoClient.Collection(collectionName).Find(context.Background(), mongoFilter)
 	if err != nil {
 		fmt.Println("Erro: ", err)
 		return nil, fmt.Errorf("erro ao consultar os dados do caminho '%s'", filter.ResourcePath)
 	}
 
 	var rows []struct{ Data interface{} }
-	if err = cur.All(context.Background(), &rows); err != nil {
+	if err = cur.All(context.TODO(), &rows); err != nil {
 		return nil, err
 	}
+
+	fmt.Println(cur.Err())
 
 	var results []interface{} = make([]interface{}, len(rows))
 	for i, row := range rows {
@@ -57,16 +66,50 @@ func (s ResourceDynamicDataService) Find(filter *models.ResourceDynamicFilter) (
 	return results, nil
 }
 
-func (s ResourceDynamicDataService) buildFilter(filter *models.ResourceDynamicFilter) bson.D {
-	mongFilter := bson.D{{Key: "resourcePath", Value: filter.ResourcePath}}
+func (s ResourceDynamicDataService) buildFilter(filter *models.ResourceDynamicFilter) (bson.M, error) {
+	mongoFilter := bson.M{"resourcePath": filter.ResourcePath}
 	if filter.Fields != nil {
+		andMapFilter := make(map[string][]bson.M)
+		andFilter := make([]bson.M, 0)
 		for _, filter := range filter.Fields {
-			key := fmt.Sprintf("data.%s", filter.Key)
-			val := filter.Value
-			mongFilter = append(mongFilter, bson.E{Key: key, Value: val})
+			if err := s.addFilterValuesByField(andMapFilter, filter); err != nil {
+				return nil, err
+			}
 		}
+		for _, value := range andMapFilter {
+			andFilter = append(andFilter, value...)
+		}
+		mongoFilter["$and"] = andFilter
 	}
-	return mongFilter
+	return mongoFilter, nil
+}
+
+func (s ResourceDynamicDataService) addFilterValuesByField(andFilter map[string][]bson.M, filter models.ResourceDynamicFieldFilter) error {
+	key := fmt.Sprintf("data.%s", filter.Key)
+	val := filter.Value
+	values, ok := andFilter[key]
+	if !ok {
+		values = make([]bson.M, 0)
+	}
+	if containsNumber.MatchString(val) {
+		orFilterValues := make([]bson.M, 0)
+		orFilterValues = append(orFilterValues, bson.M{key: val})
+		var err error
+		var numVal any = 0
+		numVal, err = strconv.Atoi(filter.Value)
+		if err != nil {
+			numVal, err = strconv.ParseFloat(filter.Value, 64)
+			if err != nil {
+				return fmt.Errorf("erro ao converter parâmetro '%s'", filter.Key)
+			}
+		}
+		orFilterValues = append(orFilterValues, bson.M{key: numVal})
+		values = append(values, bson.M{"$or": orFilterValues})
+	} else {
+		values = append(values, bson.M{key: val})
+	}
+	andFilter[key] = values
+	return nil
 }
 
 func (s ResourceDynamicDataService) DropCollection(projectId string) error {
