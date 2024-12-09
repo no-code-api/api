@@ -17,6 +17,11 @@ type ResourceDynamicDataService struct {
 	mongoClient *mongo.Database
 }
 
+type MongoRow struct {
+	ResourcePath string `bson:"resourcePath"`
+	Data         interface{}
+}
+
 var containsNumber = regexp.MustCompile(`\d`)
 
 func NewResourceDynamicDataService() IResourceDynamicDataService {
@@ -68,7 +73,7 @@ func (s ResourceDynamicDataService) Find(filter *models.ResourceDynamicFilter) (
 
 func (s ResourceDynamicDataService) buildFilter(filter *models.ResourceDynamicFilter) (bson.M, error) {
 	mongoFilter := bson.M{"resourcePath": filter.ResourcePath}
-	if filter.Fields != nil {
+	if len(filter.Fields) > 0 {
 		andMapFilter := make(map[string][]bson.M)
 		andFilter := make([]bson.M, 0)
 		for _, filter := range filter.Fields {
@@ -110,6 +115,20 @@ func (s ResourceDynamicDataService) addFilterValuesByField(andFilter map[string]
 	}
 	andFilter[key] = values
 	return nil
+}
+
+func (s ResourceDynamicDataService) Add(addModel *models.AddResourceDynamic) error {
+	collectionName := core.GetCollectionName(addModel.ProjectId)
+	rows := make([]*MongoRow, len(addModel.Rows))
+	for i, addRow := range addModel.Rows {
+		row := &MongoRow{
+			ResourcePath: addModel.ResourcePath,
+			Data:         addRow,
+		}
+		rows[i] = row
+	}
+	_, err := s.mongoClient.Collection(collectionName).InsertMany(context.TODO(), rows)
+	return err
 }
 
 func (s ResourceDynamicDataService) DropCollection(projectId string) error {
