@@ -34,6 +34,8 @@ func (s externalEndpointService) Handle(request *requests.Request) (interface{},
 		data, err = s.get(request)
 	case "POST":
 		data, err = s.post(request)
+	case "PUT":
+		data, err = s.put(request)
 	default:
 		return nil, fmt.Errorf("método '%s' não implementado", method)
 	}
@@ -100,6 +102,36 @@ func (s externalEndpointService) post(request *requests.Request) (interface{}, e
 		Rows:         rows,
 	}
 	if err := s.resourceDynamicDataService.Add(values); err != nil {
+		return nil, fmt.Errorf("erro ao cadastrar valores. %s", err)
+	}
+	return nil, nil
+}
+
+func (s externalEndpointService) put(request *requests.Request) (interface{}, error) {
+	s.sanitizePaths(request)
+	resourceCache, err := s.findCachedResource(request.ProjectId, request.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	endpoints := s.getEndpointsByMethod(resourceCache.Endpoints, request.Method)
+	endpoint := s.findCachedEndpoint(resourceCache.Path, request.Path, endpoints)
+	if endpoint == nil {
+		return nil, fmt.Errorf("endpoint '%s' para o método '%s' não encontrado", request.Method, request.Path)
+	}
+
+	if err := s.validBody(request); err != nil {
+		return nil, err
+	}
+
+	endpointPath := core.SanitizeSuffixPath(resourceCache.Path + endpoint.Path)
+	values := &models.UpdateResourceDynamic{
+		ProjectId:    request.ProjectId,
+		ResourcePath: resourceCache.Path,
+		Fields:       s.getFilterFields(endpointPath, request.Path),
+		Data:         request.Body,
+	}
+	if err := s.resourceDynamicDataService.Update(values); err != nil {
 		return nil, fmt.Errorf("erro ao cadastrar valores. %s", err)
 	}
 	return nil, nil

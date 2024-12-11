@@ -47,7 +47,7 @@ func (s ResourceDynamicDataService) CreateCollection(projectId string) error {
 
 func (s ResourceDynamicDataService) Find(filter *models.ResourceDynamicFilter) ([]interface{}, error) {
 	collectionName := core.GetCollectionName(filter.ProjectId)
-	mongoFilter, err := s.buildFilter(filter)
+	mongoFilter, err := s.buildFilter(filter.ResourcePath, filter.Fields)
 	if err != nil {
 		return nil, err
 	}
@@ -71,12 +71,12 @@ func (s ResourceDynamicDataService) Find(filter *models.ResourceDynamicFilter) (
 	return results, nil
 }
 
-func (s ResourceDynamicDataService) buildFilter(filter *models.ResourceDynamicFilter) (bson.M, error) {
-	mongoFilter := bson.M{"resourcePath": filter.ResourcePath}
-	if len(filter.Fields) > 0 {
+func (s ResourceDynamicDataService) buildFilter(resourcePath string, fields []models.ResourceDynamicFieldFilter) (bson.M, error) {
+	mongoFilter := bson.M{"resourcePath": resourcePath}
+	if len(fields) > 0 {
 		andMapFilter := make(map[string][]bson.M)
 		andFilter := make([]bson.M, 0)
-		for _, filter := range filter.Fields {
+		for _, filter := range fields {
 			if err := s.addFilterValuesByField(andMapFilter, filter); err != nil {
 				return nil, err
 			}
@@ -129,6 +129,41 @@ func (s ResourceDynamicDataService) Add(addModel *models.AddResourceDynamic) err
 	}
 	_, err := s.mongoClient.Collection(collectionName).InsertMany(context.TODO(), rows)
 	return err
+}
+
+func (s ResourceDynamicDataService) Update(updateModel *models.UpdateResourceDynamic) error {
+	collectionName := core.GetCollectionName(updateModel.ProjectId)
+	mongoFilter, err := s.buildFilter(updateModel.ResourcePath, updateModel.Fields)
+	if err != nil {
+		return err
+	}
+
+	row := s.buildRowToUpdate(updateModel)
+	collection := s.mongoClient.Collection(collectionName)
+	if _, err := collection.UpdateMany(context.TODO(), mongoFilter, bson.M{"$set": row}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ResourceDynamicDataService) buildRowToUpdate(updateModel *models.UpdateResourceDynamic) bson.M {
+	row := bson.M{}
+	hasStruct := false
+	if hasStruct {
+		// não está completo, mas seria algo parecido a isso.
+		// switch updateModel.Data.(type) {
+		// case map[string]interface{}:
+		// 	for key, a := range updateModel.Data.(map[string]interface{}) {
+		// 		prop := fmt.Sprintf("data.%s", key)
+		// 		row[prop] = a
+		// 	}
+		// default:
+		// 	row["data"] = updateModel.Data
+		// }
+	} else {
+		row["data"] = updateModel.Data
+	}
+	return row
 }
 
 func (s ResourceDynamicDataService) DropCollection(projectId string) error {
