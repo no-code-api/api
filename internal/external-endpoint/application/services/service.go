@@ -36,6 +36,8 @@ func (s externalEndpointService) Handle(request *requests.Request) (interface{},
 		data, err = s.post(request)
 	case "PUT":
 		data, err = s.put(request)
+	case "DELETE":
+		data, err = s.delete(request)
 	default:
 		return nil, fmt.Errorf("método '%s' não implementado", method)
 	}
@@ -132,7 +134,31 @@ func (s externalEndpointService) put(request *requests.Request) (interface{}, er
 		Data:         request.Body,
 	}
 	if err := s.resourceDynamicDataService.Update(values); err != nil {
-		return nil, fmt.Errorf("erro ao cadastrar valores. %s", err)
+		return nil, fmt.Errorf("erro ao atualizar valores. %s", err)
+	}
+	return nil, nil
+}
+
+func (s externalEndpointService) delete(request *requests.Request) (interface{}, error) {
+	s.sanitizePaths(request)
+	resourceCache, err := s.findCachedResource(request.ProjectId, request.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	endpoints := s.getEndpointsByMethod(resourceCache.Endpoints, request.Method)
+	endpoint := s.findCachedEndpoint(resourceCache.Path, request.Path, endpoints)
+	if endpoint == nil {
+		return nil, fmt.Errorf("endpoint '%s' para o método '%s' não encontrado", request.Method, request.Path)
+	}
+	endpointPath := core.SanitizeSuffixPath(resourceCache.Path + endpoint.Path)
+	filter := &models.ResourceDynamicFilter{
+		ProjectId:    request.ProjectId,
+		ResourcePath: resourceCache.Path,
+		Fields:       s.getFilterFields(endpointPath, request.Path),
+	}
+	if err := s.resourceDynamicDataService.Delete(filter); err != nil {
+		return nil, fmt.Errorf("erro ao remover valores. %s", err)
 	}
 	return nil, nil
 }

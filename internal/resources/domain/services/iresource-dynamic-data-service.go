@@ -7,5 +7,6 @@ type IResourceDynamicDataService interface {
 	Find(filter *models.ResourceDynamicFilter) ([]interface{}, error)
 	Add(addModel *models.AddResourceDynamic) error
 	Update(updateModel *models.UpdateResourceDynamic) error
+	Delete(filter *models.ResourceDynamicFilter) error
 	DropCollection(projectId string) error
 }

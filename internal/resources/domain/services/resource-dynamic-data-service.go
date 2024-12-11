@@ -146,6 +146,19 @@ func (s ResourceDynamicDataService) Update(updateModel *models.UpdateResourceDyn
 	return nil
 }
 
+func (s ResourceDynamicDataService) Delete(filter *models.ResourceDynamicFilter) error {
+	collectionName := core.GetCollectionName(filter.ProjectId)
+	mongoFilter, err := s.buildFilter(filter.ResourcePath, filter.Fields)
+	if err != nil {
+		return err
+	}
+	collection := s.mongoClient.Collection(collectionName)
+	if _, err := collection.DeleteMany(context.TODO(), mongoFilter); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (ResourceDynamicDataService) buildRowToUpdate(updateModel *models.UpdateResourceDynamic) bson.M {
 	row := bson.M{}
 	hasStruct := false
