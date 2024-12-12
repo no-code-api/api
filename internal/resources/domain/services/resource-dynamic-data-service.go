@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/leandro-d-santos/no-code-api/internal/logger"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/core"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
 	"github.com/leandro-d-santos/no-code-api/pkg/mongodb"
@@ -15,6 +16,7 @@ import (
 
 type ResourceDynamicDataService struct {
 	mongoClient *mongo.Database
+	logger      *logger.Logger
 }
 
 type MongoRow struct {
@@ -27,6 +29,7 @@ var containsNumber = regexp.MustCompile(`\d`)
 func NewResourceDynamicDataService() IResourceDynamicDataService {
 	return ResourceDynamicDataService{
 		mongoClient: mongodb.GetConnection(),
+		logger:      logger.NewLogger("ResourceDynamicDataService"),
 	}
 }
 
@@ -53,7 +56,7 @@ func (s ResourceDynamicDataService) Find(filter *models.ResourceDynamicFilter) (
 	}
 	cur, err := s.mongoClient.Collection(collectionName).Find(context.Background(), mongoFilter)
 	if err != nil {
-		fmt.Println("Erro: ", err)
+		s.logger.DebugF("Error to search: MF(%v) Filter(%v) err(%s)", mongoFilter, filter, err)
 		return nil, fmt.Errorf("erro ao consultar os dados do caminho '%s'", filter.ResourcePath)
 	}
 
@@ -128,6 +131,9 @@ func (s ResourceDynamicDataService) Add(addModel *models.AddResourceDynamic) err
 		rows[i] = row
 	}
 	_, err := s.mongoClient.Collection(collectionName).InsertMany(context.TODO(), rows)
+	if err != nil {
+		s.logger.DebugF("Error to insert: Rows(%v) err(%s)", rows, err)
+	}
 	return err
 }
 
@@ -141,6 +147,7 @@ func (s ResourceDynamicDataService) Update(updateModel *models.UpdateResourceDyn
 	row := s.buildRowToUpdate(updateModel)
 	collection := s.mongoClient.Collection(collectionName)
 	if _, err := collection.UpdateMany(context.TODO(), mongoFilter, bson.M{"$set": row}); err != nil {
+		s.logger.DebugF("Error to update: MF(%v) Row(%v) err(%s)", mongoFilter, row, err)
 		return err
 	}
 	return nil
@@ -154,6 +161,23 @@ func (s ResourceDynamicDataService) Delete(filter *models.ResourceDynamicFilter)
 	}
 	collection := s.mongoClient.Collection(collectionName)
 	if _, err := collection.DeleteMany(context.TODO(), mongoFilter); err != nil {
+		s.logger.DebugF("Error to delete: MF(%v) err(%s)", mongoFilter, err)
+		return err
+	}
+	return nil
+}
+
+func (s ResourceDynamicDataService) UpdateResourcePath(projectId, resourcePath string) error {
+	collectionName := core.GetCollectionName(projectId)
+	collection := s.mongoClient.Collection(collectionName)
+	mongoFilter := bson.M{}
+	row := bson.M{
+		"$set": bson.M{
+			"resourcePath": resourcePath,
+		},
+	}
+	if _, err := collection.UpdateMany(context.TODO(), mongoFilter, row); err != nil {
+		s.logger.DebugF("Error to update resourcePath: ResourcePath(%s) ProjecrId(%s) err(%s)", resourcePath, projectId, err)
 		return err
 	}
 	return nil

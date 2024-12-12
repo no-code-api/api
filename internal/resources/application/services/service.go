@@ -19,16 +19,18 @@ import (
 )
 
 type resourceService struct {
-	resourceRepository   domainRep.IRepository
-	projectRepository    projectsDomainRep.IRepository
-	resourceCacheService services.IResourceCacheService
+	resourceRepository         domainRep.IRepository
+	projectRepository          projectsDomainRep.IRepository
+	resourceCacheService       services.IResourceCacheService
+	resourceDynamicDataService services.IResourceDynamicDataService
 }
 
 func NewService(connection *postgre.Connection) IService {
 	return resourceService{
-		resourceRepository:   dataRep.NewRepository(connection),
-		projectRepository:    projectsDataRep.NewRepository(connection),
-		resourceCacheService: services.NewService(),
+		resourceRepository:         dataRep.NewRepository(connection),
+		projectRepository:          projectsDataRep.NewRepository(connection),
+		resourceCacheService:       services.NewService(),
+		resourceDynamicDataService: services.NewResourceDynamicDataService(),
 	}
 }
 
@@ -95,6 +97,10 @@ func (s resourceService) Update(updateResource *requests.UpdateResourceRequest) 
 		return errors.New("erro ao atualizar recurso")
 	}
 	if oldPath != resource.Path {
+		err := s.resourceDynamicDataService.UpdateResourcePath(resource.ProjectId, resource.Path)
+		if err != nil {
+			return errors.New("erro ao atualizar caminho do recurso nos dados cadastrados")
+		}
 		s.resourceCacheService.DeleteCache(resource.ProjectId, oldPath)
 	}
 	if err := s.resourceCacheService.SetCache(resource); err != nil {
