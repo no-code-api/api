@@ -176,7 +176,6 @@ func (s externalEndpointService) getEndpointsByMethod(cachedEndpoints []*models.
 func (s externalEndpointService) findCachedResource(projectId, path string) (*models.ResourceCache, error) {
 	segments := strings.Split(path, "/")
 	segmentsKey := ""
-	fmt.Println(segments)
 	for _, segment := range segments {
 		if segmentsKey == "/" {
 			segmentsKey = ""
@@ -207,7 +206,6 @@ func (s externalEndpointService) findCachedEndpoint(resourceCachePath, requestPa
 			endpointResult = nil
 			continue
 		}
-		fmt.Println("Endpoint")
 		for index, requestPathSegment := range requestPathSegments {
 			endpointPathSegment := endpointPathSegments[index]
 			hasId := strings.HasPrefix(endpointPathSegment, ":")

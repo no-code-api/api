@@ -22,7 +22,6 @@ func InitializeMongoDb() {
 	port := config.Env.MongoDbPort
 	databaseName := config.Env.MongoDbDbName
 	dns := fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=admin", userName, password, host, port)
-	fmt.Println(dns)
 	clientOptions := options.Client().ApplyURI(dns)
 
 	client, err := mongo.Connect(clientOptions)
@@ -35,7 +34,7 @@ func InitializeMongoDb() {
 	}
 
 	connection = client.Database(databaseName)
-	fmt.Println("MongoDB initialized")
+	logger.Debug("MongoDB initialized")
 }
 
 func GetConnection() *mongo.Database {

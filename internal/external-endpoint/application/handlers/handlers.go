@@ -48,7 +48,6 @@ func (handler ExternalEndpointHandler) Handle(baseHandler *handler.BaseHandler) 
 }
 
 func (handler ExternalEndpointHandler) GetProjectId(host string) string {
-	fmt.Println(strings.Split(host, handler.InternalDomain))
 	return strings.Split(host, handler.InternalDomain)[0]
 }
 
@@ -60,5 +59,11 @@ func (handler ExternalEndpointHandler) getBody(baseHandler *handler.BaseHandler)
 	if err := baseHandler.ShouldBindJSON(&body); err != nil {
 		return nil, fmt.Errorf("erro ao deserializar o body: %s", err)
 	}
+
+	// JSON mimificado - muito mais leve.
+	// json, _ := json.Marshal(body)
+	// fmt.Println(string(json))
+	// fmt.Println(len(json))
+	// fmt.Println(float64(len(json)) / 1024)
 	return body, nil
 }

@@ -46,8 +46,6 @@ func (s cacheService) SetCache(resource *models.Resource) error {
 func (s cacheService) GetCache(projectId, resourcePath string) (*models.ResourceCache, error) {
 	key := s.MakeKey(projectId, resourcePath)
 	data, _ := cache.Get(key)
-	fmt.Println("Data: ", data)
-	fmt.Println("key: ", key)
 	if data == "" {
 		return &models.ResourceCache{
 			Exists:    false,

@@ -65,8 +65,6 @@ func (s ResourceDynamicDataService) Find(filter *models.ResourceDynamicFilter) (
 		return nil, err
 	}
 
-	fmt.Println(cur.Err())
-
 	var results []interface{} = make([]interface{}, len(rows))
 	for i, row := range rows {
 		results[i] = row.Data
