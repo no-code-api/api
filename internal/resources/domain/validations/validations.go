@@ -54,14 +54,14 @@ func validateEmptyString(propertyName, value string) error {
 func validatePathLength(propertyName, path string) error {
 	pathLen := len(path)
 	if pathLen > 50 {
-		return fmt.Errorf("'%s' dever ter 50 ou menos caracteres", propertyName)
+		return fmt.Errorf("'%s' deve ter 50 ou menos caracteres", propertyName)
 	}
 	return nil
 }
 
 func validatePathStruct(propertyName, path string) error {
 	if !strings.HasPrefix(path, "/") {
-		return fmt.Errorf("'%s' dever começar com '/'", propertyName)
+		return fmt.Errorf("'%s' deve começar com '/'", propertyName)
 	}
 
 	if path == "/" {
@@ -73,7 +73,7 @@ func validatePathStruct(propertyName, path string) error {
 	for i := 1; i < len(segments); i++ {
 		segment := segments[i]
 		if ok := pattern.MatchString(segment); !ok {
-			return fmt.Errorf("'%s' formato incorreto. Teste /path, /:id", propertyName)
+			return fmt.Errorf("'%s' formato incorreto. Tente /path, /:id", propertyName)
 		}
 	}
 
@@ -87,7 +87,7 @@ func validateMethod(propertyName, method string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("'%s' dever estar entre: GET, POST, PUT, DELETE", propertyName)
+	return fmt.Errorf("'%s' deve estar entre: GET, POST, PUT, DELETE", propertyName)
 }
 
 func ValidateEndpoints(endpoints []*models.Endpoint) error {
