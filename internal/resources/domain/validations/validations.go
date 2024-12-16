@@ -2,6 +2,7 @@ package validations
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/constants"
@@ -10,6 +11,9 @@ import (
 
 func CreateResourceIsValid(resource *models.Resource) error {
 	if err := validatePathLength("Caminho", resource.Path); err != nil {
+		return err
+	}
+	if err := validatePathStruct("Caminho", resource.Path); err != nil {
 		return err
 	}
 	if err := validateEmptyString("Código projeto", resource.ProjectId); err != nil {
@@ -26,6 +30,9 @@ func UpdateResourceIsValid(resource *models.Resource) error {
 		return err
 	}
 	if err := validatePathLength("Caminho", resource.Path); err != nil {
+		return err
+	}
+	if err := validatePathStruct("Caminho", resource.Path); err != nil {
 		return err
 	}
 	if err := validateEmptyString("Código projeto", resource.ProjectId); err != nil {
@@ -47,8 +54,29 @@ func validateEmptyString(propertyName, value string) error {
 func validatePathLength(propertyName, path string) error {
 	pathLen := len(path)
 	if pathLen > 50 {
-		return fmt.Errorf("'%s' dever ter 50 ou menos caracteres", propertyName)
+		return fmt.Errorf("'%s' deve ter 50 ou menos caracteres", propertyName)
 	}
+	return nil
+}
+
+func validatePathStruct(propertyName, path string) error {
+	if !strings.HasPrefix(path, "/") {
+		return fmt.Errorf("'%s' deve começar com '/'", propertyName)
+	}
+
+	if path == "/" {
+		return nil
+	}
+
+	segments := strings.Split(path, "/")
+	pattern := regexp.MustCompile(`[a-zA-Z]`)
+	for i := 1; i < len(segments); i++ {
+		segment := segments[i]
+		if ok := pattern.MatchString(segment); !ok {
+			return fmt.Errorf("'%s' formato incorreto. Tente /path, /:id", propertyName)
+		}
+	}
+
 	return nil
 }
 
@@ -59,7 +87,7 @@ func validateMethod(propertyName, method string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("'%s' dever estar entre: GET, POST, PUT, DELETE", propertyName)
+	return fmt.Errorf("'%s' deve estar entre: GET, POST, PUT, DELETE", propertyName)
 }
 
 func ValidateEndpoints(endpoints []*models.Endpoint) error {
@@ -71,6 +99,9 @@ func ValidateEndpoints(endpoints []*models.Endpoint) error {
 			return err
 		}
 		if err := validatePathLength(pathProperty, endpoint.Path); err != nil {
+			return err
+		}
+		if err := validatePathStruct(pathProperty, endpoint.Path); err != nil {
 			return err
 		}
 		pathsByMethod, ok := allPathsByMethod[endpoint.Method]

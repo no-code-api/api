@@ -10,6 +10,7 @@ import (
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/requests"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/application/responses"
 	dataRep "github.com/leandro-d-santos/no-code-api/internal/resources/data/repositories"
+	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/core"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
 	domainRep "github.com/leandro-d-santos/no-code-api/internal/resources/domain/repositories"
 	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/services"
@@ -18,16 +19,18 @@ import (
 )
 
 type resourceService struct {
-	resourceRepository   domainRep.IRepository
-	projectRepository    projectsDomainRep.IRepository
-	resourceCacheService services.IResourceCacheService
+	resourceRepository         domainRep.IRepository
+	projectRepository          projectsDomainRep.IRepository
+	resourceCacheService       services.IResourceCacheService
+	resourceDynamicDataService services.IResourceDynamicDataService
 }
 
 func NewService(connection *postgre.Connection) IService {
 	return resourceService{
-		resourceRepository:   dataRep.NewRepository(connection),
-		projectRepository:    projectsDataRep.NewRepository(connection),
-		resourceCacheService: services.NewService(),
+		resourceRepository:         dataRep.NewRepository(connection),
+		projectRepository:          projectsDataRep.NewRepository(connection),
+		resourceCacheService:       services.NewService(),
+		resourceDynamicDataService: services.NewResourceDynamicDataService(),
 	}
 }
 
@@ -39,6 +42,7 @@ func (s resourceService) Create(createResource *requests.CreateResourceRequest) 
 		return err
 	}
 	resource := createResource.ToModel()
+	s.sanitizePaths(resource)
 	if err := validations.CreateResourceIsValid(resource); err != nil {
 		return err
 	}
@@ -84,6 +88,7 @@ func (s resourceService) Update(updateResource *requests.UpdateResourceRequest) 
 	oldPath := resource.Path
 	resource.Path = updateResource.Path
 	resource.Endpoints = s.transformEndpointsRequestToModel(updateResource.Endpoints)
+	s.sanitizePaths(resource)
 	if err := validations.UpdateResourceIsValid(resource); err != nil {
 		return err
 	}
@@ -92,6 +97,10 @@ func (s resourceService) Update(updateResource *requests.UpdateResourceRequest) 
 		return errors.New("erro ao atualizar recurso")
 	}
 	if oldPath != resource.Path {
+		err := s.resourceDynamicDataService.UpdateResourcePath(resource.ProjectId, resource.Path)
+		if err != nil {
+			return errors.New("erro ao atualizar caminho do recurso nos dados cadastrados")
+		}
 		s.resourceCacheService.DeleteCache(resource.ProjectId, oldPath)
 	}
 	if err := s.resourceCacheService.SetCache(resource); err != nil {
@@ -177,4 +186,11 @@ func (s resourceService) findEndpointById(id string, endpoints []*models.Endpoin
 		}
 	}
 	return nil
+}
+
+func (s resourceService) sanitizePaths(resource *models.Resource) {
+	resource.Path = core.SanitizeSuffixPath(resource.Path)
+	for _, endpoint := range resource.Endpoints {
+		endpoint.Path = core.SanitizeSuffixPath(endpoint.Path)
+	}
 }

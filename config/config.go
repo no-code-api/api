@@ -17,6 +17,7 @@ type Config struct {
 	MongoDbHost     string
 	MongoDbPort     string
 	MongoDbDbName   string
+	InternalDomain  string
 }
 
 var Env *Config
