@@ -3,7 +3,7 @@ package jwt
 import (
 	"strconv"
 
-	"github.com/leandro-d-santos/no-code-api/config"
+	"github.com/no-code-api/api/config"
 )
 
 type JwtSettings struct {

@@ -4,11 +4,14 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/leandro-d-santos/no-code-api/internal/external-endpoint/application/handlers"
-	"github.com/leandro-d-santos/no-code-api/internal/handler"
-	projectsRouter "github.com/leandro-d-santos/no-code-api/internal/projects/application/router"
-	resourceRouter "github.com/leandro-d-santos/no-code-api/internal/resources/application/router"
-	usersRouter "github.com/leandro-d-santos/no-code-api/internal/users/application/router"
+	projectsRouter "github.com/no-code-api/api/internal/projects/application/router"
+	resourceRouter "github.com/no-code-api/api/internal/resources/application/router"
+	usersRouter "github.com/no-code-api/api/internal/users/application/router"
+	"github.com/no-code-api/api/internal/external-endpoint/application/handlers"
+	"github.com/no-code-api/api/internal/handler"
+	projectsRouter "github.com/no-code-api/api/internal/projects/application/router"
+	resourceRouter "github.com/no-code-api/api/internal/resources/application/router"
+	usersRouter "github.com/no-code-api/api/internal/users/application/router"
 )
 
 func RegisterRoutes(mainServer *gin.Engine) {

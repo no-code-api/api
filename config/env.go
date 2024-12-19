@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/leandro-d-santos/no-code-api/internal/logger"
+	"github.com/no-code-api/api/internal/logger"
 )
 
 func LoadEnv() *Config {

@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"github.com/leandro-d-santos/no-code-api/internal/handler"
-	"github.com/leandro-d-santos/no-code-api/internal/projects/application/requests"
-	"github.com/leandro-d-santos/no-code-api/internal/projects/application/services"
-	"github.com/leandro-d-santos/no-code-api/pkg/postgre"
+	"github.com/no-code-api/api/internal/handler"
+	"github.com/no-code-api/api/internal/projects/application/requests"
+	"github.com/no-code-api/api/internal/projects/application/services"
+	"github.com/no-code-api/api/pkg/postgre"
 )
 
 type ProjectHandler struct {

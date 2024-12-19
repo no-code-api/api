@@ -6,10 +6,12 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/leandro-d-santos/no-code-api/internal/logger"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/core"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
-	"github.com/leandro-d-santos/no-code-api/pkg/mongodb"
+	"github.com/no-code-api/api/internal/resources/domain/core"
+	"github.com/no-code-api/api/pkg/mongodb"
+	"github.com/no-code-api/api/internal/logger"
+	"github.com/no-code-api/api/internal/resources/domain/core"
+	"github.com/no-code-api/api/internal/resources/domain/models"
+	"github.com/no-code-api/api/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )

@@ -1,6 +1,6 @@
 package repositories
 
-import "github.com/leandro-d-santos/no-code-api/internal/users/domain/models"
+import "github.com/no-code-api/api/internal/users/domain/models"
 
 type IRepository interface {
 	Create(user *models.User) (ok bool)

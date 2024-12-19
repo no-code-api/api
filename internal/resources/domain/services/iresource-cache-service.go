@@ -1,6 +1,6 @@
 package services
 
-import "github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
+import "github.com/no-code-api/api/internal/resources/domain/models"
 
 type IResourceCacheService interface {
 	MakeKey(projectId, resourcePath string) string
