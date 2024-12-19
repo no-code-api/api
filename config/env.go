@@ -31,5 +31,6 @@ func LoadEnv() *Config {
 		MongoDbHost:     os.Getenv("MONGO_DB_HOST"),
 		MongoDbPort:     os.Getenv("MONGO_DB_PORT"),
 		MongoDbDbName:   os.Getenv("MONGO_DB_DB_NAME"),
+		InternalDomain:  os.Getenv("INTERNAL_DOMAIN"),
 	}
 }

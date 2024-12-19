@@ -32,8 +32,24 @@ func Wrapper(handler HandlerFunc) gin.HandlerFunc {
 	}
 }
 
+func (h *BaseHandler) ShouldBindJSON(obj any) error {
+	return h.context.ShouldBindJSON(obj)
+}
+
 func (h *BaseHandler) Param(param string) string {
 	return h.context.Param(param)
+}
+
+func (h *BaseHandler) Host() string {
+	return h.context.Request.Host
+}
+
+func (h *BaseHandler) Path() string {
+	return h.context.Request.URL.Path
+}
+
+func (h *BaseHandler) Method() string {
+	return h.context.Request.Method
 }
 
 func (h *BaseHandler) Ok(message string, data interface{}) {
@@ -69,7 +85,7 @@ func (h *BaseHandler) InvalidParam(param string) {
 	h.Json(http.StatusBadRequest, false, message, nil)
 }
 
-func (h *BaseHandler) BindJson(obj any) (success bool) {
+func (h *BaseHandler) BindJson(obj any) bool {
 	if err := h.context.ShouldBindJSON(obj); err != nil {
 		h.BadRequest("Entrada de dados inválida.")
 		return false
