@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/leandro-d-santos/no-code-api/config"
-	"github.com/leandro-d-santos/no-code-api/internal/external-endpoint/application/requests"
-	"github.com/leandro-d-santos/no-code-api/internal/external-endpoint/application/services"
-	"github.com/leandro-d-santos/no-code-api/internal/handler"
-	"github.com/leandro-d-santos/no-code-api/internal/logger"
+	"github.com/no-code-api/api/config"
+	"github.com/no-code-api/api/internal/external-endpoint/application/requests"
+	"github.com/no-code-api/api/internal/external-endpoint/application/services"
+	"github.com/no-code-api/api/internal/handler"
+	"github.com/no-code-api/api/internal/logger"
 )
 
 type ExternalEndpointHandler struct {

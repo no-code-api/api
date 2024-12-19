@@ -6,10 +6,10 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/leandro-d-santos/no-code-api/internal/external-endpoint/application/requests"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/core"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/models"
-	"github.com/leandro-d-santos/no-code-api/internal/resources/domain/services"
+	"github.com/no-code-api/api/internal/external-endpoint/application/requests"
+	"github.com/no-code-api/api/internal/resources/domain/core"
+	"github.com/no-code-api/api/internal/resources/domain/models"
+	"github.com/no-code-api/api/internal/resources/domain/services"
 )
 
 type externalEndpointService struct {
